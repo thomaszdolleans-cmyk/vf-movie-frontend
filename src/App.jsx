@@ -249,7 +249,7 @@ export default function App() {
               <div className="space-y-6">
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                   <h3 className="text-2xl font-semibold text-white mb-2">
-                    📍 Disponible dans {filteredAvailabilities.length} pays
+                    Disponible dans {filteredAvailabilities.length} pays
                   </h3>
                   <p className="text-gray-300">Utilisez un VPN pour accéder aux catalogues étrangers</p>
                 </div>
@@ -299,7 +299,7 @@ export default function App() {
                           </div>
 
                           {avail.netflix_url && (
-                            
+                            <a
                               href={avail.netflix_url}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -316,18 +316,18 @@ export default function App() {
 
                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center">
                   <h3 className="text-2xl font-bold text-white mb-4">
-                    Besoin d'un VPN pour accéder ?
+                    Besoin d un VPN pour accéder ?
                   </h3>
                   <p className="text-white/90 mb-6">
                     Accédez aux catalogues Netflix du monde entier avec un VPN fiable et rapide
                   </p>
-                  
+                  <a
                     href="https://nordvpn.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
                   >
-                    Voir les meilleurs VPN →
+                    Voir les meilleurs VPN
                   </a>
                 </div>
               </div>
@@ -338,10 +338,9 @@ export default function App() {
 
       <footer className="mt-16 border-t border-white/10 bg-black/30 backdrop-blur-lg">
         <div className="max-w-6xl mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-          <p>Données fournies par TMDb et uNoGS • Mis à jour régulièrement</p>
-          <p className="mt-2">Pour les francophones du monde entier 🌍</p>
+          <p>Données fournies par TMDb et uNoGS</p>
+          <p className="mt-2">Pour les francophones du monde entier</p>
         </div>
       </footer>
     </div>
   );
-}
