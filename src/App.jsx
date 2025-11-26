@@ -13,7 +13,6 @@ export default function App() {
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
 
-  // Recherche avec debounce
   useEffect(() => {
     if (searchQuery.length < 2) {
       setSearchResults([]);
@@ -71,7 +70,6 @@ export default function App() {
     return true;
   });
 
-  // Grouper par région
   const groupByRegion = (availabilities) => {
     const regions = {
       'Europe': ['FR', 'BE', 'CH', 'LU', 'MC', 'DE', 'ES', 'IT', 'PT', 'NL', 'GB', 'SE', 'NO', 'DK', 'FI', 'PL', 'AT', 'CZ', 'GR'],
@@ -95,7 +93,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
       <header className="bg-black/30 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
@@ -109,7 +106,6 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Search Bar */}
         {!selectedMovie && (
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
             <div className="relative">
@@ -123,7 +119,6 @@ export default function App() {
               />
             </div>
 
-            {/* Search Results Dropdown */}
             {searchResults.length > 0 && (
               <div className="mt-4 bg-white rounded-xl shadow-lg max-h-96 overflow-y-auto">
                 {searchResults.map((movie) => (
@@ -167,10 +162,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Movie Details & Availability */}
         {selectedMovie && (
           <div className="space-y-6">
-            {/* Movie Header */}
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <button
                 onClick={goBack}
@@ -195,7 +188,6 @@ export default function App() {
                   )}
                   <p className="text-gray-400 mb-4">{selectedMovie.year}</p>
 
-                  {/* Filters */}
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => setAudioFilter('all')}
@@ -232,7 +224,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Loading Availability */}
             {loadingAvailability && (
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center">
                 <Loader className="w-12 h-12 text-purple-400 mx-auto mb-4 animate-spin" />
@@ -240,7 +231,6 @@ export default function App() {
               </div>
             )}
 
-            {/* No Results */}
             {!loadingAvailability && filteredAvailabilities.length === 0 && (
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center">
                 <Globe className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -255,7 +245,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Availability by Region */}
             {!loadingAvailability && filteredAvailabilities.length > 0 && (
               <div className="space-y-6">
                 <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
@@ -325,7 +314,6 @@ export default function App() {
                   </div>
                 ))}
 
-                {/* VPN CTA */}
                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center">
                   <h3 className="text-2xl font-bold text-white mb-4">
                     Besoin d'un VPN pour accéder ?
@@ -348,7 +336,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="mt-16 border-t border-white/10 bg-black/30 backdrop-blur-lg">
         <div className="max-w-6xl mx-auto px-4 py-6 text-center text-gray-400 text-sm">
           <p>Données fournies par TMDb et uNoGS • Mis à jour régulièrement</p>
@@ -358,22 +345,3 @@ export default function App() {
     </div>
   );
 }
-```
-
-4. **Cliquez sur "Commit changes"**
-
----
-
-## 🎉 FÉLICITATIONS ! VOUS AVEZ TERMINÉ !
-
-**Tous les fichiers sont créés ! Votre site est COMPLET !**
-```
-vf-movie-frontend/
-├── index.html ✅
-├── package.json ✅
-├── vite.config.js ✅
-├── tailwind.config.js ✅
-└── src/
-    ├── main.jsx ✅
-    ├── index.css ✅
-    └── App.jsx ✅ (TERMINÉ!)
