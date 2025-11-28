@@ -28,6 +28,20 @@ export default function App() {
   const [error, setError] = useState(null);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
+
+  // Detect iOS
+  useEffect(() => {
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(ios);
+    
+    // Show iOS prompt if on iOS and not already installed
+    if (ios && !window.navigator.standalone) {
+      // Wait 3 seconds before showing
+      setTimeout(() => setShowIOSPrompt(true), 3000);
+    }
+  }, []);
 
   // PWA Install prompt
   useEffect(() => {
@@ -163,6 +177,40 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* iOS Install Instructions */}
+      {isIOS && showIOSPrompt && !window.navigator.standalone && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-4 border-blue-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-start justify-between flex-wrap gap-4">
+              <div className="flex items-start gap-3">
+                <div className="bg-white rounded-xl p-2 flex-shrink-0">
+                  <Film className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-lg flex items-center gap-2">
+                    📱 Installer l'app sur iPhone
+                  </p>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Appuyez sur <span className="inline-flex items-center mx-1 px-2 py-0.5 bg-white/20 rounded">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
+                      </svg>
+                    </span> 
+                    puis "Sur l'écran d'accueil"
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowIOSPrompt(false)}
+                className="text-white hover:text-blue-100 px-4 font-medium text-sm"
+              >
+                ✕ Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PWA Install Prompt */}
       {showInstallPrompt && (
