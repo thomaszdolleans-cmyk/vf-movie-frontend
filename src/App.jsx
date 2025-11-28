@@ -26,6 +26,35 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  // PWA Install prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    }
+    
+    setDeferredPrompt(null);
+    setShowInstallPrompt(false);
+  };
 
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -134,6 +163,39 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* PWA Install Prompt */}
+      {showInstallPrompt && (
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 border-b-4 border-green-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-white rounded-xl p-2">
+                  <Film className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-lg">📱 Installer l'application</p>
+                  <p className="text-green-100 text-sm">Accédez rapidement à VF Movie Finder depuis votre écran d'accueil!</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleInstallClick}
+                  className="bg-white text-green-600 px-6 py-3 rounded-xl font-black hover:bg-green-50 transition-all shadow-lg"
+                >
+                  Installer
+                </button>
+                <button
+                  onClick={() => setShowInstallPrompt(false)}
+                  className="text-white hover:text-green-100 px-4 font-medium"
+                >
+                  Plus tard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Disclaimer */}
