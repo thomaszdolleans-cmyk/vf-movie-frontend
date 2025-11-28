@@ -112,19 +112,24 @@ export default function App() {
       <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-2xl relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20">
-                <Film className="w-10 h-10 text-white" />
+          <div className="flex items-center justify-center">
+            <div className="text-center">
+              {/* Logo stylé */}
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="bg-white rounded-2xl p-4 shadow-2xl transform -rotate-6">
+                  <Film className="w-12 h-12 text-red-600" />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl md:text-6xl font-black text-white tracking-tighter">VF</span>
+                    <span className="text-3xl md:text-4xl font-bold text-white/90">Movie</span>
+                  </div>
+                  <div className="text-2xl md:text-3xl font-black text-red-200 -mt-2">FINDER</div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-                  VF Movie Finder
-                </h1>
-                <p className="text-red-100 text-sm md:text-base mt-1 font-medium">
-                  🌍 Films en français · Partout dans le monde
-                </p>
-              </div>
+              <p className="text-red-100 text-base md:text-lg font-semibold">
+                🌍 Films en français · Partout dans le monde
+              </p>
             </div>
           </div>
         </div>
@@ -364,10 +369,21 @@ export default function App() {
                           className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-5 border border-gray-700 hover:border-red-500 hover:bg-gray-800 transition-all hover:scale-105"
                         >
                           <div className="flex items-center justify-between mb-4">
-                            <span className="font-black text-white text-xl flex items-center gap-2">
-                              <span className="text-3xl">{countryFlags[avail.country_code] || '🌍'}</span>
-                              {avail.country_name}
-                            </span>
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={`https://flagcdn.com/48x36/${avail.country_code.toLowerCase()}.png`}
+                                alt={`Drapeau ${avail.country_name}`}
+                                className="w-12 h-9 rounded shadow-lg border border-gray-600"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'inline';
+                                }}
+                              />
+                              <span style={{display: 'none'}} className="text-4xl">🌍</span>
+                              <span className="font-black text-white text-lg">
+                                {avail.country_name}
+                              </span>
+                            </div>
                             <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-black">
                               NETFLIX
                             </span>
