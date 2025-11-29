@@ -506,9 +506,9 @@ export default function App() {
                     ? 'Aucun pays avec VF trouvé'
                     : audioFilter === 'vostfr'
                     ? 'Aucun pays avec VOSTFR trouvé'
-                    : 'Film non disponible sur Netflix'}
+                    : 'Film non disponible en streaming'}
                 </p>
-                <p className="text-gray-500 text-lg">Ce film n'est peut-être plus disponible ou n'a jamais été sur Netflix</p>
+                <p className="text-gray-500 text-lg">Ce film n'est peut-être pas disponible sur les plateformes de streaming ou les données ne sont pas encore disponibles</p>
               </div>
             )}
 
@@ -655,7 +655,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center space-y-3">
             <p className="text-gray-400 text-sm">
-              Données fournies par TMDb · Non affilié
+              Données fournies par TMDb et uNoGS · Non affilié à Netflix
             </p>
             <p className="text-gray-500 text-sm">
               🇫🇷 Fait avec ❤️ pour les francophones du monde entier
