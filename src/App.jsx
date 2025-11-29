@@ -17,12 +17,29 @@ const countryFlags = {
   'LV': '🇱🇻', 'EE': '🇪🇪', 'PE': '🇵🇪', 'VE': '🇻🇪', 'UY': '🇺🇾', 'EC': '🇪🇨'
 };
 
+// Platform colors and styles
+const platformStyles = {
+  'Netflix': { bg: 'bg-red-600', text: 'text-white', icon: '▶' },
+  'Amazon Prime': { bg: 'bg-blue-500', text: 'text-white', icon: '►' },
+  'Disney+': { bg: 'bg-blue-600', text: 'text-white', icon: '★' },
+  'HBO Max': { bg: 'bg-purple-600', text: 'text-white', icon: '▶' },
+  'Apple TV+': { bg: 'bg-black', text: 'text-white', icon: '' },
+  'Paramount+': { bg: 'bg-blue-700', text: 'text-white', icon: '▲' },
+  'Canal+': { bg: 'bg-black', text: 'text-white', icon: '+' },
+  'default': { bg: 'bg-gray-600', text: 'text-white', icon: '▶' }
+};
+
+function getPlatformStyle(platform) {
+  return platformStyles[platform] || platformStyles.default;
+}
+
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [audioFilter, setAudioFilter] = useState('all');
+  const [platformFilter, setPlatformFilter] = useState('all'); // NEW: Platform filter
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
@@ -122,10 +139,18 @@ export default function App() {
   };
 
   const filteredAvailabilities = availabilities.filter(a => {
-    if (audioFilter === 'vf') return a.has_french_audio;
-    if (audioFilter === 'vostfr') return a.has_french_subtitles;
+    // Audio/Subtitle filter
+    if (audioFilter === 'vf' && !a.has_french_audio) return false;
+    if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+    
+    // Platform filter
+    if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+    
     return true;
   });
+
+  // Get unique platforms from availabilities
+  const availablePlatforms = [...new Set(availabilities.map(a => a.platform))].sort();
 
   const groupByRegion = (availabilities) => {
     const regions = {
@@ -425,6 +450,42 @@ export default function App() {
                       📝 VOSTFR ({availabilities.filter(a => a.has_french_subtitles).length})
                     </button>
                   </div>
+
+                  {/* Platform Filters */}
+                  {availablePlatforms.length > 1 && (
+                    <div className="mt-4">
+                      <p className="text-gray-400 text-sm mb-2">Filtrer par plateforme:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() => setPlatformFilter('all')}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                            platformFilter === 'all'
+                              ? 'bg-white text-red-600 shadow-lg'
+                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          }`}
+                        >
+                          Toutes
+                        </button>
+                        {availablePlatforms.map(platform => {
+                          const style = getPlatformStyle(platform);
+                          const count = availabilities.filter(a => a.platform === platform).length;
+                          return (
+                            <button
+                              key={platform}
+                              onClick={() => setPlatformFilter(platform)}
+                              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                platformFilter === platform
+                                  ? `${style.bg} ${style.text} shadow-lg scale-105`
+                                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              {style.icon} {platform} ({count})
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -457,12 +518,17 @@ export default function App() {
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-8 text-center shadow-2xl border border-green-500">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     <CheckCircle className="w-10 h-10 text-white" />
-                    <h3 className="text-4xl font-black text-white">
-                      {filteredAvailabilities.length} pays
-                    </h3>
+                    <div className="text-left">
+                      <h3 className="text-4xl font-black text-white">
+                        {[...new Set(filteredAvailabilities.map(a => a.country_code))].length} pays
+                      </h3>
+                      <p className="text-green-100 text-lg font-medium">
+                        sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-green-100 text-xl font-medium">
-                    Film disponible dans {filteredAvailabilities.length} catalogue{filteredAvailabilities.length > 1 ? 's' : ''} Netflix
+                  <p className="text-green-100 text-xl font-medium mt-2">
+                    Film disponible avec contenu français
                   </p>
                 </div>
 
@@ -495,8 +561,8 @@ export default function App() {
                                 {avail.country_name}
                               </span>
                             </div>
-                            <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-black">
-                              NETFLIX
+                            <span className={`text-xs ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
+                              {getPlatformStyle(avail.platform).icon} {avail.platform.toUpperCase()}
                             </span>
                           </div>
 
@@ -522,16 +588,24 @@ export default function App() {
                                 Sous-titres français
                               </span>
                             </div>
+
+                            {avail.quality && (
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
+                                  {avail.quality.toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
-                          {avail.netflix_url && (
+                          {avail.streaming_url && (
                             <a
-                              href={avail.netflix_url}
+                              href={avail.streaming_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="block text-center bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-black transition-all hover:scale-105 shadow-lg"
+                              className={`block text-center ${getPlatformStyle(avail.platform).bg} hover:opacity-90 text-white py-3 rounded-xl text-sm font-black transition-all hover:scale-105 shadow-lg`}
                             >
-                              ▶ Voir sur Netflix
+                              ▶ Voir sur {avail.platform}
                             </a>
                           )}
                         </div>
@@ -581,7 +655,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center space-y-3">
             <p className="text-gray-400 text-sm">
-              Données fournies par TMDb et uNoGS · Non affilié à Netflix
+              Données fournies par TMDb · Non affilié
             </p>
             <p className="text-gray-500 text-sm">
               🇫🇷 Fait avec ❤️ pour les francophones du monde entier
