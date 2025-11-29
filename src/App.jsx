@@ -154,9 +154,11 @@ export default function App() {
     // Platform filter
     if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
     
-    // Streaming type filter (multi-select)
-    const streamingType = a.streaming_type || 'subscription';
-    if (!typeFilters.includes(streamingType)) return false;
+    // Streaming type filter (multi-select) - if empty, show all types
+    if (typeFilters.length > 0) {
+      const streamingType = a.streaming_type || 'subscription';
+      if (!typeFilters.includes(streamingType)) return false;
+    }
     
     // Country filter (new)
     if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
@@ -254,17 +256,15 @@ export default function App() {
   // Toggle streaming type filter (multi-select)
   const toggleTypeFilter = (type) => {
     if (typeFilters.includes(type)) {
-      // Remove if already selected (but keep at least one)
-      if (typeFilters.length > 1) {
-        setTypeFilters(typeFilters.filter(t => t !== type));
-      }
+      // Remove if already selected
+      setTypeFilters(typeFilters.filter(t => t !== type));
     } else {
       // Add if not selected
       setTypeFilters([...typeFilters, type]);
     }
   };
   
-  // Count by type (dynamic based on current filters)
+  // Count by type (dynamic based on current filters, BUT excluding type filter itself)
   const typeCount = {
     subscription: 0,
     rent: 0,
@@ -274,12 +274,30 @@ export default function App() {
   };
   
   try {
-    if (filteredAvailabilities && Array.isArray(filteredAvailabilities)) {
-      typeCount.subscription = filteredAvailabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length;
-      typeCount.rent = filteredAvailabilities.filter(a => a.streaming_type === 'rent').length;
-      typeCount.buy = filteredAvailabilities.filter(a => a.streaming_type === 'buy').length;
-      typeCount.addon = filteredAvailabilities.filter(a => a.streaming_type === 'addon').length;
-      typeCount.free = filteredAvailabilities.filter(a => a.streaming_type === 'free').length;
+    if (availabilities && Array.isArray(availabilities)) {
+      // Count based on all availabilities, but filtered by audio/platform/country (NOT by type)
+      const baseFiltered = availabilities.filter(a => {
+        if (!a) return false;
+        
+        // Apply platform filter
+        if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+        
+        // Apply country filter
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        // Apply audio filter
+        if (audioFilter === 'vf' && !a.has_french_audio) return false;
+        if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+        
+        return true;
+      });
+      
+      // Count by type in the base filtered results
+      typeCount.subscription = baseFiltered.filter(a => (a.streaming_type || 'subscription') === 'subscription').length;
+      typeCount.rent = baseFiltered.filter(a => a.streaming_type === 'rent').length;
+      typeCount.buy = baseFiltered.filter(a => a.streaming_type === 'buy').length;
+      typeCount.addon = baseFiltered.filter(a => a.streaming_type === 'addon').length;
+      typeCount.free = baseFiltered.filter(a => a.streaming_type === 'free').length;
     }
   } catch (error) {
     console.error('typeCount error:', error);
@@ -294,8 +312,11 @@ export default function App() {
         // Apply all filters except audio filter
         if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
         
-        const streamingType = a.streaming_type || 'subscription';
-        if (!typeFilters.includes(streamingType)) return false;
+        // Apply type filter - if empty, show all types
+        if (typeFilters.length > 0) {
+          const streamingType = a.streaming_type || 'subscription';
+          if (!typeFilters.includes(streamingType)) return false;
+        }
         
         if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
         
@@ -317,8 +338,11 @@ export default function App() {
         if (!a) return false; // Safety check
         
         // Apply all filters except platform filter
-        const streamingType = a.streaming_type || 'subscription';
-        if (!typeFilters.includes(streamingType)) return false;
+        // Apply type filter - if empty, show all types
+        if (typeFilters.length > 0) {
+          const streamingType = a.streaming_type || 'subscription';
+          if (!typeFilters.includes(streamingType)) return false;
+        }
         
         if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
         
