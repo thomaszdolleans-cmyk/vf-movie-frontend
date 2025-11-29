@@ -154,23 +154,23 @@ export default function App() {
       {/* Header */}
       <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-2xl relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 relative z-10">
           <div className="flex items-center justify-center">
             <div className="text-center">
               {/* Logo stylé */}
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="bg-white rounded-2xl p-4 shadow-2xl transform -rotate-6">
-                  <Film className="w-12 h-12 text-red-600" />
+              <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <div className="bg-white rounded-xl md:rounded-2xl p-2 md:p-4 shadow-2xl transform -rotate-6">
+                  <Film className="w-6 h-6 md:w-12 md:h-12 text-red-600" />
                 </div>
                 <div className="text-left">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl md:text-6xl font-black text-white tracking-tighter">VF</span>
-                    <span className="text-3xl md:text-4xl font-bold text-white/90">Movie</span>
+                  <div className="flex items-baseline gap-1 md:gap-2">
+                    <span className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter">VF</span>
+                    <span className="text-xl md:text-3xl lg:text-4xl font-bold text-white/90">Movie</span>
                   </div>
-                  <div className="text-2xl md:text-3xl font-black text-red-200 -mt-2">FINDER</div>
+                  <div className="text-base md:text-2xl lg:text-3xl font-black text-red-200 -mt-1 md:-mt-2">FINDER</div>
                 </div>
               </div>
-              <p className="text-red-100 text-base md:text-lg font-semibold">
+              <p className="text-red-100 text-xs md:text-base lg:text-lg font-semibold">
                 🌍 Films en français · Partout dans le monde
               </p>
             </div>
@@ -180,32 +180,33 @@ export default function App() {
 
       {/* iOS Install Instructions */}
       {isIOS && showIOSPrompt && !window.navigator.standalone && (
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-4 border-blue-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-start justify-between flex-wrap gap-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-white rounded-xl p-2 flex-shrink-0">
-                  <Film className="w-6 h-6 text-blue-600" />
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-2 md:border-b-4 border-blue-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+            <div className="flex items-start justify-between flex-wrap gap-2 md:gap-4">
+              <div className="flex items-start gap-2 md:gap-3">
+                <div className="bg-white rounded-lg md:rounded-xl p-1 md:p-2 flex-shrink-0">
+                  <Film className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-lg flex items-center gap-2">
-                    📱 Installer l'app sur iPhone
+                  <p className="text-white font-bold text-sm md:text-lg flex items-center gap-2">
+                    📱 Installer l'app
                   </p>
-                  <p className="text-blue-100 text-sm mt-1">
-                    Appuyez sur <span className="inline-flex items-center mx-1 px-2 py-0.5 bg-white/20 rounded">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <p className="text-blue-100 text-xs md:text-sm mt-0.5 md:mt-1">
+                    <span className="hidden md:inline">Appuyez sur </span>
+                    <span className="inline-flex items-center mx-1 px-1 md:px-2 py-0.5 bg-white/20 rounded">
+                      <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
                       </svg>
                     </span> 
-                    puis "Sur l'écran d'accueil"
+                    <span className="hidden md:inline">puis </span>"Sur l'écran d'accueil"
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowIOSPrompt(false)}
-                className="text-white hover:text-blue-100 px-4 font-medium text-sm"
+                className="text-white hover:text-blue-100 px-2 md:px-4 font-medium text-xs md:text-sm"
               >
-                ✕ Fermer
+                ✕
               </button>
             </div>
           </div>
@@ -214,30 +215,31 @@ export default function App() {
 
       {/* PWA Install Prompt */}
       {showInstallPrompt && (
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 border-b-4 border-green-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-white rounded-xl p-2">
-                  <Film className="w-6 h-6 text-green-600" />
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 border-b-2 md:border-b-4 border-green-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+            <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="bg-white rounded-lg md:rounded-xl p-1 md:p-2">
+                  <Film className="w-4 h-4 md:w-6 md:h-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-lg">📱 Installer l'application</p>
-                  <p className="text-green-100 text-sm">Accédez rapidement à VF Movie Finder depuis votre écran d'accueil!</p>
+                  <p className="text-white font-bold text-sm md:text-lg">📱 Installer l'app</p>
+                  <p className="text-green-100 text-xs md:text-sm hidden md:block">Accédez rapidement depuis votre écran d'accueil!</p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 md:gap-3">
                 <button
                   onClick={handleInstallClick}
-                  className="bg-white text-green-600 px-6 py-3 rounded-xl font-black hover:bg-green-50 transition-all shadow-lg"
+                  className="bg-white text-green-600 px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-black hover:bg-green-50 transition-all shadow-lg"
                 >
                   Installer
                 </button>
                 <button
                   onClick={() => setShowInstallPrompt(false)}
-                  className="text-white hover:text-green-100 px-4 font-medium"
+                  className="text-white hover:text-green-100 px-2 md:px-4 text-sm md:text-base font-medium"
                 >
-                  Plus tard
+                  <span className="md:hidden">✕</span>
+                  <span className="hidden md:inline">Plus tard</span>
                 </button>
               </div>
             </div>
@@ -245,25 +247,24 @@ export default function App() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {/* Disclaimer */}
-        <div className="mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-yellow-200">
-            <strong>Info importante :</strong> Les données proviennent d'une base tierce mise à jour quotidiennement. 
-            Certaines informations peuvent être incomplètes ou obsolètes. Vérifiez toujours sur Netflix avant d'utiliser un VPN.
+        <div className="mb-4 md:mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg md:rounded-xl p-2 md:p-4 flex items-start gap-2 md:gap-3">
+          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+          <div className="text-xs md:text-sm text-yellow-200">
+            <strong className="hidden md:inline">Info importante : </strong>Les données proviennent d'une base tierce<span className="hidden md:inline"> mise à jour quotidiennement. Certaines informations peuvent être incomplètes ou obsolètes</span>. Vérifiez sur Netflix.
           </div>
         </div>
 
         {!selectedMovie && (
           <>
             {/* Search Hero */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12 border border-gray-700 shadow-2xl mb-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 border border-gray-700 shadow-2xl mb-6 md:mb-8">
+              <div className="text-center mb-4 md:mb-8">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3">
                   Trouvez votre film en VF 🎬
                 </h2>
-                <p className="text-gray-300 text-lg">
+                <p className="text-gray-300 text-sm md:text-lg hidden md:block">
                   Recherchez parmi des milliers de films disponibles sur Netflix dans le monde
                 </p>
               </div>
@@ -330,35 +331,35 @@ export default function App() {
             </div>
 
             {/* VPN Section */}
-            <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
-              <Shield className="w-16 h-16 text-white mx-auto mb-4" />
-              <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
+            <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 text-center shadow-2xl border border-red-500">
+              <Shield className="w-12 h-12 md:w-16 md:h-16 text-white mx-auto mb-3 md:mb-4" />
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-3 md:mb-4">
                 Besoin d'un VPN ?
               </h3>
-              <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                Accédez aux catalogues Netflix du monde entier en toute sécurité avec un VPN fiable et rapide
+              <p className="text-white/90 text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
+                Accédez aux catalogues Netflix du monde entier en toute sécurité
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
                 <a
                   href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white text-red-600 px-8 py-4 rounded-xl font-black text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl"
+                  className="inline-flex items-center gap-2 bg-white text-red-600 px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl w-full sm:w-auto justify-center"
                 >
-                  <Zap className="w-5 h-5" />
+                  <Zap className="w-4 h-4 md:w-5 md:h-5" />
                   NordVPN
                 </a>
                 <a
                   href="https://www.expressvpn.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-all hover:scale-105"
+                  className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-white/20 transition-all hover:scale-105 w-full sm:w-auto justify-center"
                 >
-                  <Tv className="w-5 h-5" />
+                  <Tv className="w-4 h-4 md:w-5 md:h-5" />
                   ExpressVPN
                 </a>
               </div>
-              <p className="text-white/70 text-sm mt-6">
+              <p className="text-white/70 text-xs md:text-sm mt-4 md:mt-6">
                 💰 Économisez jusqu'à 60% avec nos liens partenaires
               </p>
             </div>
