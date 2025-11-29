@@ -38,12 +38,12 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
-  const [audioFilter, setAudioFilter] = useState('french'); // Changed from 'all' to 'french' - show only VF or VOSTFR by default
+  const [audioFilter, setAudioFilter] = useState('all'); // 'all' = show all (VF + VOSTFR), 'vf' = VF only, 'vostfr' = VOSTFR only
   const [platformFilter, setPlatformFilter] = useState('all');
   const [typeFilters, setTypeFilters] = useState(['subscription', 'rent', 'buy', 'addon', 'free']);
-  const [countryFilter, setCountryFilter] = useState('all'); // New: Country filter
-  const [expandedCountries, setExpandedCountries] = useState({}); // Track which countries are expanded
-  const [showFiltersMenu, setShowFiltersMenu] = useState(true); // Toggle filters visibility
+  const [countryFilter, setCountryFilter] = useState('all');
+  const [expandedCountries, setExpandedCountries] = useState({});
+  const [showFiltersMenu, setShowFiltersMenu] = useState(true);
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
@@ -162,15 +162,14 @@ export default function App() {
       if (!typeFilters.includes(streamingType)) return false;
     }
     
-    // Country filter (new)
+    // Country filter
     if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
     
     // Audio/Subtitle filter
-    if (audioFilter === 'vf') return a.has_french_audio;
-    if (audioFilter === 'vostfr') return a.has_french_subtitles;
-    if (audioFilter === 'french') return a.has_french_audio || a.has_french_subtitles; // VF OR VOSTFR
+    if (audioFilter === 'vf') return a.has_french_audio; // VF only
+    if (audioFilter === 'vostfr') return a.has_french_subtitles; // VOSTFR only
+    // 'all' = show everything (both VF and VOSTFR mixed)
     
-    // 'all' = show everything (including VO only)
     return true;
   });
 
@@ -285,14 +284,14 @@ export default function App() {
   
   // Reset all filters
   const resetFilters = () => {
-    setAudioFilter('french'); // Reset to 'french' (VF or VOSTFR) by default
+    setAudioFilter('all'); // Reset to 'all' (show everything)
     setPlatformFilter('all');
     setCountryFilter('all');
     setTypeFilters(['subscription', 'rent', 'buy', 'addon', 'free']);
   };
   
   // Check if any filters are active
-  const hasActiveFilters = audioFilter !== 'french' || // Changed from 'all' to 'french'
+  const hasActiveFilters = audioFilter !== 'all' ||
                           platformFilter !== 'all' || 
                           countryFilter !== 'all' ||
                           typeFilters.length < 5;
@@ -340,7 +339,7 @@ export default function App() {
         // Apply audio filter
         if (audioFilter === 'vf' && !a.has_french_audio) return false;
         if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
-        if (audioFilter === 'french' && !a.has_french_audio && !a.has_french_subtitles) return false;
+        // 'all' = no audio filtering
         
         return true;
       });
@@ -360,7 +359,7 @@ export default function App() {
   const getAudioCount = (audioType) => {
     try {
       return availabilities.filter(a => {
-        if (!a) return false; // Safety check
+        if (!a) return false;
         
         // Apply all filters except audio filter
         if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
@@ -373,11 +372,10 @@ export default function App() {
         
         if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
         
-        // Then count based on audio type
+        // Count based on audio type
         if (audioType === 'vf') return a.has_french_audio;
         if (audioType === 'vostfr') return a.has_french_subtitles;
-        if (audioType === 'french') return a.has_french_audio || a.has_french_subtitles; // VF OR VOSTFR
-        return true; // 'all'
+        return true; // 'all' = count everything
       }).length;
     } catch (error) {
       console.error('getAudioCount error:', error);
@@ -402,7 +400,7 @@ export default function App() {
         
         if (audioFilter === 'vf' && !a.has_french_audio) return false;
         if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
-        if (audioFilter === 'french' && !a.has_french_audio && !a.has_french_subtitles) return false;
+        // 'all' = no audio filtering
         
         // Then count based on platform
         return a.platform === platform;
@@ -751,16 +749,6 @@ export default function App() {
                         </p>
                         <div className="flex gap-2 flex-wrap">
                           <button
-                            onClick={() => setAudioFilter('french')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              audioFilter === 'french'
-                                ? 'bg-red-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                            }`}
-                          >
-                            🇫🇷 VF ou VOSTFR ({getAudioCount('french')})
-                          </button>
-                          <button
                             onClick={() => setAudioFilter('vf')}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                               audioFilter === 'vf'
@@ -768,7 +756,7 @@ export default function App() {
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                             }`}
                           >
-                            🎙️ VF uniquement ({getAudioCount('vf')})
+                            🎙️ VF ({getAudioCount('vf')})
                           </button>
                           <button
                             onClick={() => setAudioFilter('vostfr')}
@@ -778,19 +766,10 @@ export default function App() {
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                             }`}
                           >
-                            📝 VOSTFR uniquement ({getAudioCount('vostfr')})
-                          </button>
-                          <button
-                            onClick={() => setAudioFilter('all')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              audioFilter === 'all'
-                                ? 'bg-red-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                            }`}
-                          >
-                            🌍 Tout (VO inclus) ({getAudioCount('all')})
+                            📝 VOSTFR ({getAudioCount('vostfr')})
                           </button>
                         </div>
+                        <p className="text-gray-500 text-xs mt-2">💡 Par défaut: Tout (VF + VOSTFR) - Cliquez pour filtrer</p>
                       </div>
 
                       {/* Platform Filters */}
@@ -1184,7 +1163,7 @@ export default function App() {
                     Débloquez ce film avec un VPN
                   </h3>
                   <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                    Changez virtuellement de pays pour accéder à n'importe quel catalogue de service de streaming
+                    Changez virtuellement de pays pour accéder à n'importe quel catalogue Netflix
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
