@@ -594,9 +594,19 @@ export default function App() {
                                 {avail.country_name}
                               </span>
                             </div>
-                            <span className={`text-xs ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
-                              {getPlatformStyle(avail.platform).icon} {avail.platform.toUpperCase()}
-                            </span>
+                            <div className="flex flex-col gap-1 items-end">
+                              <span className={`text-xs ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
+                                {getPlatformStyle(avail.platform).icon} {avail.platform.toUpperCase()}
+                              </span>
+                              {avail.streaming_type && avail.streaming_type !== 'subscription' && (
+                                <span className="text-xs bg-yellow-600 text-white px-2 py-1 rounded font-bold">
+                                  {avail.streaming_type === 'rent' ? '🎬 LOCATION' : 
+                                   avail.streaming_type === 'buy' ? '💰 ACHAT' : 
+                                   avail.streaming_type === 'free' ? '🆓 GRATUIT' : 
+                                   avail.streaming_type.toUpperCase()}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="space-y-3 mb-4">
@@ -638,7 +648,9 @@ export default function App() {
                               rel="noopener noreferrer"
                               className={`block text-center ${getPlatformStyle(avail.platform).bg} hover:opacity-90 text-white py-3 rounded-xl text-sm font-black transition-all hover:scale-105 shadow-lg`}
                             >
-                              ▶ Voir sur {avail.platform}
+                              {avail.streaming_type === 'rent' ? '🎬 Louer' :
+                               avail.streaming_type === 'buy' ? '💰 Acheter' :
+                               `▶ Voir sur ${avail.platform}`}
                             </a>
                           )}
                         </div>
