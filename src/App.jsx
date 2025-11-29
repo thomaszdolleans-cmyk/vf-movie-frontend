@@ -174,13 +174,44 @@ export default function App() {
     }
   };
   
-  // Count by type
+  // Count by type (dynamic based on current filters)
   const typeCount = {
-    subscription: availabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length,
-    rent: availabilities.filter(a => a.streaming_type === 'rent').length,
-    buy: availabilities.filter(a => a.streaming_type === 'buy').length,
-    addon: availabilities.filter(a => a.streaming_type === 'addon').length,
-    free: availabilities.filter(a => a.streaming_type === 'free').length
+    subscription: filteredAvailabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length,
+    rent: filteredAvailabilities.filter(a => a.streaming_type === 'rent').length,
+    buy: filteredAvailabilities.filter(a => a.streaming_type === 'buy').length,
+    addon: filteredAvailabilities.filter(a => a.streaming_type === 'addon').length,
+    free: filteredAvailabilities.filter(a => a.streaming_type === 'free').length
+  };
+  
+  // Count VF/VOSTFR based on current filters (excluding audio filter itself)
+  const getAudioCount = (audioType) => {
+    return availabilities.filter(a => {
+      // Apply all filters except audio filter
+      if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+      
+      const streamingType = a.streaming_type || 'subscription';
+      if (!typeFilters.includes(streamingType)) return false;
+      
+      // Then count based on audio type
+      if (audioType === 'vf') return a.has_french_audio;
+      if (audioType === 'vostfr') return a.has_french_subtitles;
+      return true; // 'all'
+    }).length;
+  };
+  
+  // Count platforms based on current filters (excluding platform filter itself)
+  const getPlatformCount = (platform) => {
+    return availabilities.filter(a => {
+      // Apply all filters except platform filter
+      const streamingType = a.streaming_type || 'subscription';
+      if (!typeFilters.includes(streamingType)) return false;
+      
+      if (audioFilter === 'vf' && !a.has_french_audio) return false;
+      if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+      
+      // Then count based on platform
+      return a.platform === platform;
+    }).length;
   };
 
   const groupByRegion = (availabilities) => {
@@ -458,7 +489,7 @@ export default function App() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      Tous les résultats ({availabilities.length})
+                      Tous les résultats ({getAudioCount('all')})
                     </button>
                     <button
                       onClick={() => setAudioFilter('vf')}
@@ -468,7 +499,7 @@ export default function App() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      🎙️ VF uniquement ({availabilities.filter(a => a.has_french_audio).length})
+                      🎙️ VF uniquement ({getAudioCount('vf')})
                     </button>
                     <button
                       onClick={() => setAudioFilter('vostfr')}
@@ -478,7 +509,7 @@ export default function App() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      📝 VOSTFR ({availabilities.filter(a => a.has_french_subtitles).length})
+                      📝 VOSTFR ({getAudioCount('vostfr')})
                     </button>
                   </div>
 
@@ -499,7 +530,7 @@ export default function App() {
                         </button>
                         {availablePlatforms.map(platform => {
                           const style = getPlatformStyle(platform);
-                          const count = availabilities.filter(a => a.platform === platform).length;
+                          const count = getPlatformCount(platform);
                           return (
                             <button
                               key={platform}
