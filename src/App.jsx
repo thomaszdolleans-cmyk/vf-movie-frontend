@@ -139,18 +139,23 @@ export default function App() {
   };
 
   const filteredAvailabilities = availabilities.filter(a => {
-    // Audio/Subtitle filter
-    if (audioFilter === 'vf' && !a.has_french_audio) return false;
-    if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
-    
     // Platform filter
     if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
     
+    // Audio/Subtitle filter
+    if (audioFilter === 'vf') return a.has_french_audio;
+    if (audioFilter === 'vostfr') return a.has_french_subtitles;
+    if (audioFilter === 'french') return a.has_french_audio || a.has_french_subtitles;
+    
+    // 'all' = show everything
     return true;
   });
 
   // Get unique platforms from availabilities
   const availablePlatforms = [...new Set(availabilities.map(a => a.platform))].sort();
+  
+  // Count films with French content
+  const frenchContentCount = availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).length;
 
   const groupByRegion = (availabilities) => {
     const regions = {
@@ -427,7 +432,17 @@ export default function App() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      Tous ({availabilities.length})
+                      Tous les résultats ({availabilities.length})
+                    </button>
+                    <button
+                      onClick={() => setAudioFilter('french')}
+                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
+                        audioFilter === 'french'
+                          ? 'bg-red-600 text-white shadow-lg scale-105'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      🇫🇷 Avec français ({frenchContentCount})
                     </button>
                     <button
                       onClick={() => setAudioFilter('vf')}
@@ -498,15 +513,25 @@ export default function App() {
               </div>
             )}
 
-            {!loadingAvailability && filteredAvailabilities.length === 0 && (
+            {!loadingAvailability && filteredAvailabilities.length === 0 && availabilities.length > 0 && (
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
                 <Globe className="w-16 h-16 text-gray-500 mx-auto mb-6" />
                 <p className="text-gray-300 text-2xl font-bold mb-3">
-                  {audioFilter === 'vf' 
-                    ? 'Aucun pays avec VF trouvé'
-                    : audioFilter === 'vostfr'
-                    ? 'Aucun pays avec VOSTFR trouvé'
-                    : 'Film non disponible en streaming'}
+                  Aucun résultat avec ces filtres
+                </p>
+                <p className="text-gray-500 text-lg">
+                  Le film est disponible dans {availabilities.length} pays, mais aucun ne correspond à vos filtres.
+                  <br />
+                  Essayez "Tous les résultats" pour voir toutes les options.
+                </p>
+              </div>
+            )}
+
+            {!loadingAvailability && availabilities.length === 0 && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
+                <Globe className="w-16 h-16 text-gray-500 mx-auto mb-6" />
+                <p className="text-gray-300 text-2xl font-bold mb-3">
+                  Film non disponible en streaming
                 </p>
                 <p className="text-gray-500 text-lg">Ce film n'est peut-être pas disponible sur les plateformes de streaming ou les données ne sont pas encore disponibles</p>
               </div>
