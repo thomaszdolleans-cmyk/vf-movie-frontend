@@ -125,15 +125,17 @@ export default function App() {
     setLoadingAvailability(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/api/movie/${movie.tmdb_id}/availability`);
+      const mediaType = movie.media_type || 'movie'; // Default to movie for backwards compatibility
+      const response = await fetch(`${API_URL}/api/media/${mediaType}/${movie.tmdb_id}/availability`);
       const data = await response.json();
       setAvailabilities(data.availabilities || []);
       // Update selectedMovie with full details from backend (backdrop, overview, etc.)
-      if (data.movie) {
+      if (data.media) {
         setSelectedMovie({
           ...movie,
-          ...data.movie,
-          tmdb_id: movie.tmdb_id // Keep the original tmdb_id
+          ...data.media,
+          tmdb_id: movie.tmdb_id, // Keep the original tmdb_id
+          media_type: mediaType // Ensure media_type is set
         });
       }
     } catch (err) {
@@ -186,6 +188,55 @@ export default function App() {
     acc[countryCode].options.push(avail);
     return acc;
   }, {});
+
+  // For TV series, group seasons by platform/type/addon
+  const groupSeasons = (options) => {
+    const grouped = {};
+    options.forEach(opt => {
+      const key = `${opt.platform}-${opt.streaming_type}-${opt.addon_name || ''}`;
+      if (!grouped[key]) {
+        grouped[key] = { ...opt, seasons: [] };
+      }
+      if (opt.season_number !== null && opt.season_number !== undefined) {
+        grouped[key].seasons.push(opt.season_number);
+      }
+    });
+    
+    // Sort seasons and format them
+    Object.values(grouped).forEach(group => {
+      if (group.seasons.length > 0) {
+        group.seasons.sort((a, b) => a - b);
+        // Format as ranges if consecutive
+        group.seasonsText = formatSeasonRanges(group.seasons);
+      }
+    });
+    
+    return Object.values(grouped);
+  };
+
+  // Format season numbers into ranges (e.g., "1-4, 6, 8-10")
+  const formatSeasonRanges = (seasons) => {
+    if (seasons.length === 0) return '';
+    if (seasons.length === 1) return `Saison ${seasons[0]}`;
+    
+    const ranges = [];
+    let start = seasons[0];
+    let end = seasons[0];
+    
+    for (let i = 1; i < seasons.length; i++) {
+      if (seasons[i] === end + 1) {
+        end = seasons[i];
+      } else {
+        ranges.push(start === end ? `${start}` : `${start}-${end}`);
+        start = end = seasons[i];
+      }
+    }
+    ranges.push(start === end ? `${start}` : `${start}-${end}`);
+    
+    return ranges.length === 1 && ranges[0].includes('-') 
+      ? `Saisons ${ranges[0]}` 
+      : `Saison${ranges.length > 1 ? 's' : ''} ${ranges.join(', ')}`;
+  };
 
   // Convert to array and sort by number of options (descending)
   const countriesArray = Object.values(groupedByCountry).sort((a, b) => b.options.length - a.options.length);
@@ -510,8 +561,15 @@ export default function App() {
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="font-bold text-gray-900 text-lg">{movie.title}</h3>
-                          <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-gray-900 text-lg">{movie.title}</h3>
+                            <span className={`text-xs px-2 py-0.5 rounded font-bold ${
+                              movie.media_type === 'tv' ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                            }`}>
+                              {movie.media_type === 'tv' ? '📺 SÉRIE' : '🎬 FILM'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 flex items-center gap-2">
                             📅 {movie.year}
                             {movie.availability_count > 0 && (
                               <>
@@ -998,7 +1056,7 @@ export default function App() {
                             {/* Expanded Options */}
                             {isExpanded && (
                               <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
-                                {country.options.map((avail, idx) => (
+                                {(selectedMovie?.media_type === 'tv' ? groupSeasons(country.options) : country.options).map((avail, idx) => (
                                   <div
                                     key={idx}
                                     className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
@@ -1025,6 +1083,13 @@ export default function App() {
                                         {avail.platform === 'Amazon Prime' && avail.streaming_type === 'subscription' && (
                                           <span className="text-xs px-2 py-1 rounded bg-green-600 text-white font-bold">
                                             ✓ INCLUS
+                                          </span>
+                                        )}
+                                        
+                                        {/* Show season information for TV series */}
+                                        {selectedMovie?.media_type === 'tv' && avail.seasonsText && (
+                                          <span className="text-xs px-2 py-1 rounded bg-purple-600 text-white font-bold">
+                                            📺 {avail.seasonsText}
                                           </span>
                                         )}
                                       </div>
@@ -1119,7 +1184,7 @@ export default function App() {
                     Débloquez ce film avec un VPN
                   </h3>
                   <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                    Changez virtuellement de pays pour accéder à n'importe quel catalogue Netflix
+                    Changez virtuellement de pays pour accéder à n'importe quel catalogue de service de streaming
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
