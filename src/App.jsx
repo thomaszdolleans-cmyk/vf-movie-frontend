@@ -1,757 +1,1166 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
-const { Pool } = require('pg');
+import React, { useState, useEffect } from 'react';
+import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle } from 'lucide-react';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const API_URL = 'https://vf-movie-backend.onrender.com';
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// PostgreSQL connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
-// Initialize database
-pool.query(`
-  CREATE TABLE IF NOT EXISTS availabilities (
-    id SERIAL PRIMARY KEY,
-    tmdb_id INTEGER NOT NULL,
-    platform VARCHAR(50) NOT NULL,
-    country_code VARCHAR(10) NOT NULL,
-    country_name VARCHAR(100) NOT NULL,
-    streaming_type VARCHAR(20) NOT NULL DEFAULT 'subscription',
-    addon_name VARCHAR(100),
-    has_french_audio BOOLEAN DEFAULT false,
-    has_french_subtitles BOOLEAN DEFAULT false,
-    streaming_url TEXT,
-    quality VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(tmdb_id, platform, country_code, streaming_type, addon_name)
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_tmdb_platform ON availabilities(tmdb_id, platform);
-  CREATE INDEX IF NOT EXISTS idx_updated_at ON availabilities(updated_at);
-  CREATE INDEX IF NOT EXISTS idx_streaming_type ON availabilities(streaming_type);
-`).catch(err => console.error('Database initialization error:', err));
-
-// TMDB API client
-const tmdbClient = axios.create({
-  baseURL: 'https://api.themoviedb.org/3',
-  params: {
-    api_key: process.env.TMDB_API_KEY,
-    language: 'fr-FR'
-  }
-});
-
-// Streaming Availability API client
-const streamingClient = axios.create({
-  baseURL: 'https://streaming-availability.p.rapidapi.com',
-  headers: {
-    'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-    'X-RapidAPI-Host': 'streaming-availability.p.rapidapi.com'
-  }
-});
-
-// Platform mapping
-const PLATFORMS = {
-  'netflix': 'Netflix',
-  'prime': 'Amazon Prime',
-  'disney': 'Disney+',
-  'hbo': 'HBO Max',
-  'apple': 'Apple TV+',
-  'paramount': 'Paramount+',
-  'peacock': 'Peacock',
-  'hulu': 'Hulu',
-  'mubi': 'MUBI',
-  'stan': 'Stan',
-  'now': 'NOW',
-  'crave': 'Crave',
-  'all4': 'Channel 4',
-  'iplayer': 'BBC iPlayer',
-  'britbox': 'BritBox',
-  'hotstar': 'Disney+ Hotstar',
-  'zee5': 'Zee5',
-  'curiosity': 'CuriosityStream',
-  'wow': 'WOW',
-  'canal': 'Canal+'
+const countryFlags = {
+  'FR': '🇫🇷', 'BE': '🇧🇪', 'CH': '🇨🇭', 'CA': '🇨🇦', 'US': '🇺🇸', 'GB': '🇬🇧',
+  'DE': '🇩🇪', 'ES': '🇪🇸', 'IT': '🇮🇹', 'PT': '🇵🇹', 'BR': '🇧🇷', 'MX': '🇲🇽',
+  'AR': '🇦🇷', 'CL': '🇨🇱', 'CO': '🇨🇴', 'AU': '🇦🇺', 'NZ': '🇳🇿', 'JP': '🇯🇵',
+  'KR': '🇰🇷', 'IN': '🇮🇳', 'SG': '🇸🇬', 'TH': '🇹🇭', 'NL': '🇳🇱', 'SE': '🇸🇪',
+  'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮', 'PL': '🇵🇱', 'CZ': '🇨🇿', 'GR': '🇬🇷',
+  'TR': '🇹🇷', 'ZA': '🇿🇦', 'MA': '🇲🇦', 'TN': '🇹🇳', 'DZ': '🇩🇿', 'SN': '🇸🇳',
+  'AT': '🇦🇹', 'IE': '🇮🇪', 'HU': '🇭🇺', 'RO': '🇷🇴', 'UA': '🇺🇦', 'IL': '🇮🇱',
+  'PH': '🇵🇭', 'MY': '🇲🇾', 'ID': '🇮🇩', 'VN': '🇻🇳', 'HK': '🇭🇰', 'TW': '🇹🇼',
+  'EG': '🇪🇬', 'NG': '🇳🇬', 'KE': '🇰🇪', 'CI': '🇨🇮', 'MG': '🇲🇬', 'IS': '🇮🇸',
+  'HR': '🇭🇷', 'RS': '🇷🇸', 'SI': '🇸🇮', 'SK': '🇸🇰', 'BG': '🇧🇬', 'LT': '🇱🇹',
+  'LV': '🇱🇻', 'EE': '🇪🇪', 'PE': '🇵🇪', 'VE': '🇻🇪', 'UY': '🇺🇾', 'EC': '🇪🇨'
 };
 
-// Country name mapping (complete list)
-function getCountryName(code) {
-  const countries = {
-    'AD': 'Andorre', 'AE': 'Émirats arabes unis', 'AF': 'Afghanistan', 'AG': 'Antigua-et-Barbuda',
-    'AI': 'Anguilla', 'AL': 'Albanie', 'AM': 'Arménie', 'AO': 'Angola', 'AQ': 'Antarctique',
-    'AR': 'Argentine', 'AS': 'Samoa américaines', 'AT': 'Autriche', 'AU': 'Australie', 
-    'AW': 'Aruba', 'AX': 'Îles Åland', 'AZ': 'Azerbaïdjan', 'BA': 'Bosnie-Herzégovine',
-    'BB': 'Barbade', 'BD': 'Bangladesh', 'BE': 'Belgique', 'BF': 'Burkina Faso',
-    'BG': 'Bulgarie', 'BH': 'Bahreïn', 'BI': 'Burundi', 'BJ': 'Bénin', 'BL': 'Saint-Barthélemy',
-    'BM': 'Bermudes', 'BN': 'Brunei', 'BO': 'Bolivie', 'BQ': 'Bonaire', 'BR': 'Brésil',
-    'BS': 'Bahamas', 'BT': 'Bhoutan', 'BV': 'Île Bouvet', 'BW': 'Botswana', 'BY': 'Biélorussie',
-    'BZ': 'Belize', 'CA': 'Canada', 'CC': 'Îles Cocos', 'CD': 'Congo (RDC)', 'CF': 'République centrafricaine',
-    'CG': 'Congo', 'CH': 'Suisse', 'CI': 'Côte d\'Ivoire', 'CK': 'Îles Cook', 'CL': 'Chili',
-    'CM': 'Cameroun', 'CN': 'Chine', 'CO': 'Colombie', 'CR': 'Costa Rica', 'CU': 'Cuba',
-    'CV': 'Cap-Vert', 'CW': 'Curaçao', 'CX': 'Île Christmas', 'CY': 'Chypre', 'CZ': 'Tchéquie',
-    'DE': 'Allemagne', 'DJ': 'Djibouti', 'DK': 'Danemark', 'DM': 'Dominique', 'DO': 'République dominicaine',
-    'DZ': 'Algérie', 'EC': 'Équateur', 'EE': 'Estonie', 'EG': 'Égypte', 'EH': 'Sahara occidental',
-    'ER': 'Érythrée', 'ES': 'Espagne', 'ET': 'Éthiopie', 'FI': 'Finlande', 'FJ': 'Fidji',
-    'FK': 'Îles Malouines', 'FM': 'Micronésie', 'FO': 'Îles Féroé', 'FR': 'France', 'GA': 'Gabon',
-    'GB': 'Royaume-Uni', 'GD': 'Grenade', 'GE': 'Géorgie', 'GF': 'Guyane française', 'GG': 'Guernesey',
-    'GH': 'Ghana', 'GI': 'Gibraltar', 'GL': 'Groenland', 'GM': 'Gambie', 'GN': 'Guinée',
-    'GP': 'Guadeloupe', 'GQ': 'Guinée équatoriale', 'GR': 'Grèce', 'GS': 'Géorgie du Sud',
-    'GT': 'Guatemala', 'GU': 'Guam', 'GW': 'Guinée-Bissau', 'GY': 'Guyana', 'HK': 'Hong Kong',
-    'HM': 'Îles Heard-et-MacDonald', 'HN': 'Honduras', 'HR': 'Croatie', 'HT': 'Haïti', 'HU': 'Hongrie',
-    'ID': 'Indonésie', 'IE': 'Irlande', 'IL': 'Israël', 'IM': 'Île de Man', 'IN': 'Inde',
-    'IO': 'Territoire britannique de l\'océan Indien', 'IQ': 'Irak', 'IR': 'Iran', 'IS': 'Islande',
-    'IT': 'Italie', 'JE': 'Jersey', 'JM': 'Jamaïque', 'JO': 'Jordanie', 'JP': 'Japon',
-    'KE': 'Kenya', 'KG': 'Kirghizistan', 'KH': 'Cambodge', 'KI': 'Kiribati', 'KM': 'Comores',
-    'KN': 'Saint-Kitts-et-Nevis', 'KP': 'Corée du Nord', 'KR': 'Corée du Sud', 'KW': 'Koweït',
-    'KY': 'Îles Caïmans', 'KZ': 'Kazakhstan', 'LA': 'Laos', 'LB': 'Liban', 'LC': 'Sainte-Lucie',
-    'LI': 'Liechtenstein', 'LK': 'Sri Lanka', 'LR': 'Liberia', 'LS': 'Lesotho', 'LT': 'Lituanie',
-    'LU': 'Luxembourg', 'LV': 'Lettonie', 'LY': 'Libye', 'MA': 'Maroc', 'MC': 'Monaco',
-    'MD': 'Moldavie', 'ME': 'Monténégro', 'MF': 'Saint-Martin', 'MG': 'Madagascar', 'MH': 'Îles Marshall',
-    'MK': 'Macédoine du Nord', 'ML': 'Mali', 'MM': 'Myanmar', 'MN': 'Mongolie', 'MO': 'Macao',
-    'MP': 'Îles Mariannes du Nord', 'MQ': 'Martinique', 'MR': 'Mauritanie', 'MS': 'Montserrat',
-    'MT': 'Malte', 'MU': 'Maurice', 'MV': 'Maldives', 'MW': 'Malawi', 'MX': 'Mexique',
-    'MY': 'Malaisie', 'MZ': 'Mozambique', 'NA': 'Namibie', 'NC': 'Nouvelle-Calédonie', 'NE': 'Niger',
-    'NF': 'Île Norfolk', 'NG': 'Nigeria', 'NI': 'Nicaragua', 'NL': 'Pays-Bas', 'NO': 'Norvège',
-    'NP': 'Népal', 'NR': 'Nauru', 'NU': 'Niue', 'NZ': 'Nouvelle-Zélande', 'OM': 'Oman',
-    'PA': 'Panama', 'PE': 'Pérou', 'PF': 'Polynésie française', 'PG': 'Papouasie-Nouvelle-Guinée',
-    'PH': 'Philippines', 'PK': 'Pakistan', 'PL': 'Pologne', 'PM': 'Saint-Pierre-et-Miquelon',
-    'PN': 'Îles Pitcairn', 'PR': 'Porto Rico', 'PS': 'Palestine', 'PT': 'Portugal', 'PW': 'Palaos',
-    'PY': 'Paraguay', 'QA': 'Qatar', 'RE': 'La Réunion', 'RO': 'Roumanie', 'RS': 'Serbie',
-    'RU': 'Russie', 'RW': 'Rwanda', 'SA': 'Arabie saoudite', 'SB': 'Îles Salomon', 'SC': 'Seychelles',
-    'SD': 'Soudan', 'SE': 'Suède', 'SG': 'Singapour', 'SH': 'Sainte-Hélène', 'SI': 'Slovénie',
-    'SJ': 'Svalbard et Jan Mayen', 'SK': 'Slovaquie', 'SL': 'Sierra Leone', 'SM': 'Saint-Marin',
-    'SN': 'Sénégal', 'SO': 'Somalie', 'SR': 'Suriname', 'SS': 'Soudan du Sud', 'ST': 'Sao Tomé-et-Principe',
-    'SV': 'Salvador', 'SX': 'Sint Maarten', 'SY': 'Syrie', 'SZ': 'Eswatini', 'TC': 'Îles Turques-et-Caïques',
-    'TD': 'Tchad', 'TF': 'Terres australes françaises', 'TG': 'Togo', 'TH': 'Thaïlande', 'TJ': 'Tadjikistan',
-    'TK': 'Tokelau', 'TL': 'Timor oriental', 'TM': 'Turkménistan', 'TN': 'Tunisie', 'TO': 'Tonga',
-    'TR': 'Turquie', 'TT': 'Trinité-et-Tobago', 'TV': 'Tuvalu', 'TW': 'Taïwan', 'TZ': 'Tanzanie',
-    'UA': 'Ukraine', 'UG': 'Ouganda', 'UM': 'Îles mineures éloignées des États-Unis', 'US': 'États-Unis',
-    'UY': 'Uruguay', 'UZ': 'Ouzbékistan', 'VA': 'Vatican', 'VC': 'Saint-Vincent-et-les-Grenadines',
-    'VE': 'Venezuela', 'VG': 'Îles Vierges britanniques', 'VI': 'Îles Vierges des États-Unis',
-    'VN': 'Viêt Nam', 'VU': 'Vanuatu', 'WF': 'Wallis-et-Futuna', 'WS': 'Samoa', 'YE': 'Yémen',
-    'YT': 'Mayotte', 'ZA': 'Afrique du Sud', 'ZM': 'Zambie', 'ZW': 'Zimbabwe'
-  };
-  return countries[code] || code;
+// Platform colors and styles
+const platformStyles = {
+  'Netflix': { bg: 'bg-red-600', text: 'text-white', icon: '▶' },
+  'Amazon Prime': { bg: 'bg-blue-500', text: 'text-white', icon: '►' },
+  'Disney+': { bg: 'bg-blue-600', text: 'text-white', icon: '★' },
+  'HBO Max': { bg: 'bg-purple-600', text: 'text-white', icon: '▶' },
+  'Apple TV+': { bg: 'bg-black', text: 'text-white', icon: '' },
+  'Paramount+': { bg: 'bg-blue-700', text: 'text-white', icon: '▲' },
+  'Canal+': { bg: 'bg-black', text: 'text-white', icon: '+' },
+  'default': { bg: 'bg-gray-600', text: 'text-white', icon: '▶' }
+};
+
+function getPlatformStyle(platform) {
+  return platformStyles[platform] || platformStyles.default;
 }
 
-// Cache duration: 7 days
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000;
+export default function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [availabilities, setAvailabilities] = useState([]);
+  const [audioFilter, setAudioFilter] = useState('french'); // Changed from 'all' to 'french' - show only VF or VOSTFR by default
+  const [platformFilter, setPlatformFilter] = useState('all');
+  const [typeFilters, setTypeFilters] = useState(['subscription', 'rent', 'buy', 'addon', 'free']);
+  const [countryFilter, setCountryFilter] = useState('all'); // New: Country filter
+  const [expandedCountries, setExpandedCountries] = useState({}); // Track which countries are expanded
+  const [showFiltersMenu, setShowFiltersMenu] = useState(true); // Toggle filters visibility
+  const [loading, setLoading] = useState(false);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [error, setError] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
 
-// Fetch streaming availability from Streaming Availability API
-async function fetchStreamingAvailability(tmdbId) {
-  try {
-    // Use TMDB ID format: movie/{tmdb_id}
-    const response = await streamingClient.get(`/shows/movie/${tmdbId}`, {
-      params: {
-        series_granularity: 'show',
-        output_language: 'fr'
-      }
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error('Streaming Availability API error:', error.response?.data || error.message);
-    return null;
-  }
-}
-
-// Process and cache streaming data
-async function processAndCacheStreaming(tmdbId, streamingData) {
-  if (!streamingData || !streamingData.streamingOptions) {
-    console.log('No streaming options available');
-    return [];
-  }
-
-  const availabilities = [];
-  const streamingOptions = streamingData.streamingOptions;
-
-  // Delete old cache for this movie
-  await pool.query('DELETE FROM availabilities WHERE tmdb_id = $1', [tmdbId]);
-
-  // Process each country
-  for (const [countryCode, options] of Object.entries(streamingOptions)) {
-    const country = countryCode.toUpperCase();
-    const countryName = getCountryName(country);
-
-    // Process each streaming option in this country
-    for (const option of options) {
-      if (!option || !option.service) continue;
-
-      const platformKey = option.service.id;
-      // Always use the main service name, never the addon name
-      const platformName = PLATFORMS[platformKey] || option.service.name || platformKey;
-      
-      // Get streaming type (subscription, rent, buy, free, addon)
-      const streamingType = option.type || 'subscription';
-      
-      // Get addon name if type is addon (this is the channel/addon name, not the platform)
-      const addonName = streamingType === 'addon' && option.addon?.name 
-        ? option.addon.name 
-        : null;
-      
-      // FILTER: Skip Prime addons except Starz and MGM
-      if (platformKey === 'prime' && streamingType === 'addon') {
-        const allowedPrimeAddons = ['Starz', 'MGM+', 'MGM Plus', 'MGM', 'STARZ'];
-        if (!addonName || !allowedPrimeAddons.some(allowed => addonName.toLowerCase().includes(allowed.toLowerCase()))) {
-          console.log(`⏭️ Skipping Prime addon: ${addonName || 'unknown'} (not Starz or MGM)`);
-          continue; // Skip this option
-        }
-        console.log(`✅ Keeping Prime addon: ${addonName} (Starz or MGM)`);
-      }
-      
-      // Debug logging for addons
-      if (streamingType === 'addon' && availabilities.length < 3) {
-        console.log(`🔍 ADDON DEBUG:`, {
-          platformKey,
-          platformName,
-          addonName,
-          serviceId: option.service.id,
-          serviceName: option.service.name,
-          addonFullName: option.addon?.name
-        });
-      }
-
-      // Check for French audio and subtitles with improved detection
-      const hasFrenchAudio = option.audios?.some(a => {
-        const lang = a.language?.toLowerCase();
-        return lang === 'fra' || lang === 'fr' || lang === 'fre';
-      }) || false;
-
-      const hasFrenchSubtitles = option.subtitles?.some(s => {
-        if (!s) return false;
-        
-        // Handle language (direct string)
-        const lang = s.language ? String(s.language).toLowerCase() : '';
-        
-        // Handle locale (object with language property)
-        const localeLanguage = s.locale?.language ? String(s.locale.language).toLowerCase() : '';
-        
-        // Check both language and locale.language for French
-        return lang === 'fra' || lang === 'fr' || lang === 'fre' || 
-               localeLanguage === 'fra' || localeLanguage === 'fr' || localeLanguage === 'fre';
-      }) || false;
-
-      // Debug logging for first few entries to check subtitle data
-      if (availabilities.length < 5) {
-        console.log(`📊 ${platformName} (${streamingType}${addonName ? ` - ${addonName}` : ''}) in ${countryName}:`, {
-          audios: option.audios?.map(a => a.language),
-          subtitles: option.subtitles?.map(s => ({ 
-            lang: s.language, 
-            localeLanguage: s.locale?.language,
-            closedCaptions: s.closedCaptions 
-          })),
-          hasFrenchAudio,
-          hasFrenchSubtitles,
-          type: streamingType,
-          addon: addonName,
-          quality: option.quality
-        });
-      }
-
-      // IMPORTANT: Save ALL options, not just French ones!
-      const availability = {
-        tmdb_id: tmdbId,
-        platform: platformName,
-        country_code: country,
-        country_name: countryName,
-        streaming_type: streamingType,
-        addon_name: addonName,
-        has_french_audio: hasFrenchAudio,
-        has_french_subtitles: hasFrenchSubtitles,
-        streaming_url: option.link || null,
-        quality: option.quality || 'hd'
-      };
-
-      // Insert into database
-      try {
-        await pool.query(
-          `INSERT INTO availabilities 
-          (tmdb_id, platform, country_code, country_name, streaming_type, addon_name, has_french_audio, has_french_subtitles, streaming_url, quality, updated_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
-          ON CONFLICT (tmdb_id, platform, country_code, streaming_type, addon_name, quality) 
-          DO UPDATE SET 
-            has_french_audio = $7,
-            has_french_subtitles = $8,
-            streaming_url = $9,
-            updated_at = CURRENT_TIMESTAMP`,
-          [tmdbId, platformName, country, countryName, streamingType, addonName, hasFrenchAudio, hasFrenchSubtitles, option.link, option.quality || 'hd']
-        );
-
-        availabilities.push(availability);
-      } catch (dbError) {
-        console.error('Database insert error:', dbError);
-      }
+  // Detect iOS
+  useEffect(() => {
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(ios);
+    
+    // Show iOS prompt if on iOS and not already installed
+    if (ios && !window.navigator.standalone) {
+      // Wait 3 seconds before showing
+      setTimeout(() => setShowIOSPrompt(true), 3000);
     }
-  }
+  }, []);
 
-  console.log(`✅ Cached ${availabilities.length} availabilities for TMDB ID ${tmdbId} (${availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).length} with French content)`);
-  return availabilities;
-}
-
-// Routes
-
-// Search movies
-app.get('/api/search', async (req, res) => {
-  try {
-    const { query } = req.query;
-
-    if (!query || query.trim().length < 2) {
-      return res.json({ results: [] });
-    }
-
-    const searchResponse = await tmdbClient.get('/search/movie', {
-      params: { query }
-    });
-
-    const results = await Promise.all(
-      searchResponse.data.results.slice(0, 10).map(async (movie) => {
-        // Check how many availabilities we have cached
-        const countResult = await pool.query(
-          'SELECT COUNT(DISTINCT country_code) as count FROM availabilities WHERE tmdb_id = $1',
-          [movie.id]
-        );
-
-        return {
-          tmdb_id: movie.id,
-          title: movie.title,
-          original_title: movie.original_title,
-          year: movie.release_date ? new Date(movie.release_date).getFullYear() : null,
-          poster: movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : null,
-          availability_count: parseInt(countResult.rows[0].count) || 0
-        };
-      })
-    );
-
-    res.json({ results });
-  } catch (error) {
-    console.error('Search error:', error);
-    res.status(500).json({ error: 'Search failed' });
-  }
-});
-
-// Get movie availability
-app.get('/api/movie/:id/availability', async (req, res) => {
-  try {
-    const tmdb_id = parseInt(req.params.id);
-
-    // Get movie details from TMDB
-    const movieResponse = await tmdbClient.get(`/movie/${tmdb_id}`);
-    const movieDetails = movieResponse.data;
-
-    // Check cache
-    const cacheCheck = await pool.query(
-      'SELECT updated_at FROM availabilities WHERE tmdb_id = $1 ORDER BY updated_at DESC LIMIT 1',
-      [tmdb_id]
-    );
-
-    if (cacheCheck.rows.length > 0) {
-      const cacheAge = Date.now() - new Date(cacheCheck.rows[0].updated_at).getTime();
-
-      if (cacheAge < CACHE_DURATION) {
-        console.log(`✅ Using cached data (${Math.round(cacheAge / (1000 * 60 * 60))} hours old) for "${movieDetails.title}"`);
-
-        const cached = await pool.query(
-          'SELECT * FROM availabilities WHERE tmdb_id = $1 ORDER BY platform, country_name',
-          [tmdb_id]
-        );
-
-        return res.json({ 
-          availabilities: cached.rows,
-          movie: {
-            title: movieDetails.title,
-            original_title: movieDetails.original_title,
-            year: movieDetails.release_date ? new Date(movieDetails.release_date).getFullYear() : null,
-            poster: movieDetails.poster_path ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}` : null,
-            backdrop: movieDetails.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movieDetails.backdrop_path}` : null,
-            vote_average: movieDetails.vote_average,
-            overview: movieDetails.overview
-          }
-        });
-      } else {
-        console.log(`⏰ Cache expired (${Math.round(cacheAge / (1000 * 60 * 60 * 24))} days old), fetching fresh data...`);
-      }
-    }
-
-    // Fetch fresh data using TMDB ID
-    console.log(`🔍 Fetching streaming data for "${movieDetails.title}" (TMDB ID: ${tmdb_id})`);
-    const streamingData = await fetchStreamingAvailability(tmdb_id);
-
-    if (!streamingData) {
-      return res.json({ 
-        availabilities: [],
-        movie: {
-          title: movieDetails.title,
-          original_title: movieDetails.original_title,
-          year: movieDetails.release_date ? new Date(movieDetails.release_date).getFullYear() : null,
-          poster: movieDetails.poster_path ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}` : null,
-          backdrop: movieDetails.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movieDetails.backdrop_path}` : null,
-          vote_average: movieDetails.vote_average,
-          overview: movieDetails.overview
-        }
-      });
-    }
-
-    const availabilities = await processAndCacheStreaming(tmdb_id, streamingData);
-    res.json({ 
-      availabilities,
-      movie: {
-        title: movieDetails.title,
-        original_title: movieDetails.original_title,
-        year: movieDetails.release_date ? new Date(movieDetails.release_date).getFullYear() : null,
-        poster: movieDetails.poster_path ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}` : null,
-        backdrop: movieDetails.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movieDetails.backdrop_path}` : null,
-        vote_average: movieDetails.vote_average,
-        overview: movieDetails.overview
-      }
-    });
-
-  } catch (error) {
-    console.error('Availability error:', error);
-    res.status(500).json({ error: 'Failed to fetch availability' });
-  }
-});
-
-// Debug endpoint - check duplicates
-app.get('/api/debug-duplicates/:tmdb_id', async (req, res) => {
-  try {
-    const tmdb_id = parseInt(req.params.tmdb_id);
-    
-    // Get all entries for this movie
-    const result = await pool.query(
-      `SELECT tmdb_id, platform, country_code, country_name, streaming_type, addon_name, 
-              quality, has_french_audio, has_french_subtitles, streaming_url, 
-              created_at, updated_at
-       FROM availabilities 
-       WHERE tmdb_id = $1 
-       ORDER BY country_code, platform, streaming_type, addon_name`,
-      [tmdb_id]
-    );
-    
-    // Find duplicates (same country, platform, type, addon)
-    const seen = new Map();
-    const duplicates = [];
-    
-    result.rows.forEach(row => {
-      const key = `${row.country_code}-${row.platform}-${row.streaming_type}-${row.addon_name}`;
-      if (seen.has(key)) {
-        duplicates.push({
-          key,
-          first: seen.get(key),
-          duplicate: row
-        });
-      } else {
-        seen.set(key, row);
-      }
-    });
-    
-    res.json({
-      total_entries: result.rows.length,
-      unique_keys: seen.size,
-      duplicates_found: duplicates.length,
-      duplicates: duplicates,
-      sample_entries: result.rows.slice(0, 10)
-    });
-  } catch (error) {
-    console.error('Debug duplicates error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Clear all cache
-app.get('/api/clear-all-cache', async (req, res) => {
-  try {
-    const result = await pool.query('DELETE FROM availabilities');
-    res.json({ message: `Cleared ${result.rowCount} cached entries` });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to clear cache' });
-  }
-});
-
-// Clear cache for specific movie
-app.get('/api/clear-cache/:tmdb_id', async (req, res) => {
-  try {
-    const result = await pool.query('DELETE FROM availabilities WHERE tmdb_id = $1', [req.params.tmdb_id]);
-    res.json({ message: `Cleared ${result.rowCount} cached entries for TMDB ID ${req.params.tmdb_id}` });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to clear cache' });
-  }
-});
-
-// RESET DATABASE ENDPOINT (for fixing table structure)
-app.get('/api/reset-database', async (req, res) => {
-  try {
-    console.log('🔄 Dropping old table...');
-    await pool.query('DROP TABLE IF EXISTS availabilities');
-    console.log('✅ Old table dropped!');
-    
-    console.log('🔨 Creating new table with correct structure...');
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS availabilities (
-        id SERIAL PRIMARY KEY,
-        tmdb_id INTEGER NOT NULL,
-        platform VARCHAR(50) NOT NULL,
-        country_code VARCHAR(10) NOT NULL,
-        country_name VARCHAR(100) NOT NULL,
-        streaming_type VARCHAR(20) NOT NULL DEFAULT 'subscription',
-        addon_name VARCHAR(100),
-        has_french_audio BOOLEAN DEFAULT false,
-        has_french_subtitles BOOLEAN DEFAULT false,
-        streaming_url TEXT,
-        quality VARCHAR(20),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(tmdb_id, platform, country_code, streaming_type, addon_name, quality)
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_tmdb_platform ON availabilities(tmdb_id, platform);
-      CREATE INDEX IF NOT EXISTS idx_updated_at ON availabilities(updated_at);
-      CREATE INDEX IF NOT EXISTS idx_streaming_type ON availabilities(streaming_type);
-    `);
-    
-    console.log('✅ New table created successfully with streaming_type and addon_name support!');
-    res.json({ 
-      success: true, 
-      message: 'Database reset successfully! Table recreated with streaming_type and addon_name columns for VOD and addon support.' 
-    });
-  } catch (error) {
-    console.error('❌ Reset error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// TEST ENDPOINT - Test Streaming Availability API
-app.get('/api/test-streaming-api', async (req, res) => {
-  try {
-    // Test with Inception (TMDB ID: 27205)
-    const testTmdbId = '27205';
-    
-    console.log(`🧪 Testing Streaming Availability API with TMDB ID: ${testTmdbId}`);
-    
-    // Check if API key is configured
-    if (!process.env.RAPIDAPI_KEY) {
-      return res.json({
-        success: false,
-        error: 'RAPIDAPI_KEY is not configured in environment variables',
-        configured: {
-          TMDB_API_KEY: !!process.env.TMDB_API_KEY,
-          RAPIDAPI_KEY: !!process.env.RAPIDAPI_KEY,
-          DATABASE_URL: !!process.env.DATABASE_URL
-        }
-      });
-    }
-
-    const response = await streamingClient.get(`/shows/movie/${testTmdbId}`, {
-      params: {
-        series_granularity: 'show',
-        output_language: 'fr'
-      }
-    });
-
-    const platformCount = Object.keys(response.data.streamingOptions || {}).length;
-    const platforms = {};
-    
-    // Count platforms
-    if (response.data.streamingOptions) {
-      for (const [country, countryPlatforms] of Object.entries(response.data.streamingOptions)) {
-        for (const platformData of countryPlatforms) {
-          const platform = platformData.service?.id || 'unknown';
-          platforms[platform] = (platforms[platform] || 0) + 1;
-        }
-      }
-    }
-
-    res.json({
-      success: true,
-      message: 'API is working!',
-      test_movie: `Inception (TMDB ID: ${testTmdbId})`,
-      countries_found: platformCount,
-      platforms_found: platforms,
-      sample_data: response.data.streamingOptions ? Object.keys(response.data.streamingOptions).slice(0, 5) : [],
-      api_key_configured: true,
-      full_response_sample: response.data.streamingOptions ? 
-        Object.entries(response.data.streamingOptions).slice(0, 1).map(([country, options]) => ({
-          country,
-          options: options.slice(0, 2)
-        })) : []
-    });
-
-  } catch (error) {
-    console.error('❌ Test failed:', error.response?.data || error.message);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      error_details: error.response?.data,
-      api_key_configured: !!process.env.RAPIDAPI_KEY
-    });
-  }
-});
-
-// DEBUG ENDPOINT - Inspect subtitle data for a specific movie
-app.get('/api/debug-subtitles/:tmdb_id', async (req, res) => {
-  try {
-    const tmdbId = req.params.tmdb_id;
-    
-    console.log(`🔍 Debug: Fetching subtitle data for TMDB ID ${tmdbId}`);
-    
-    const response = await streamingClient.get(`/shows/movie/${tmdbId}`, {
-      params: {
-        series_granularity: 'show',
-        output_language: 'fr'
-      }
-    });
-
-    const subtitleData = [];
-    
-    if (response.data.streamingOptions) {
-      for (const [country, options] of Object.entries(response.data.streamingOptions)) {
-        for (const option of options) {
-          if (option.subtitles && option.subtitles.length > 0) {
-            subtitleData.push({
-              country,
-              platform: option.service?.name,
-              subtitles: option.subtitles,
-              audios: option.audios
-            });
-          }
-        }
-      }
-    }
-
-    res.json({
-      tmdb_id: tmdbId,
-      total_options: Object.values(response.data.streamingOptions || {}).flat().length,
-      options_with_subtitles: subtitleData.length,
-      subtitle_samples: subtitleData.slice(0, 10)
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message,
-      details: error.response?.data
-    });
-  }
-});
-
-// DEBUG ENDPOINT - Check addon details
-app.get('/api/debug-addons/:tmdb_id', async (req, res) => {
-  try {
-    const tmdbId = req.params.tmdb_id;
-    
-    console.log(`🔍 Debug: Fetching addon details for TMDB ID ${tmdbId}`);
-    
-    const response = await streamingClient.get(`/shows/movie/${tmdbId}`, {
-      params: {
-        series_granularity: 'show',
-        output_language: 'fr'
-      }
-    });
-
-    const addonSamples = [];
-    
-    if (response.data.streamingOptions) {
-      for (const [country, options] of Object.entries(response.data.streamingOptions)) {
-        for (const option of options) {
-          if (option.type === 'addon') {
-            addonSamples.push({
-              country,
-              platform: option.service?.name || option.service?.id,
-              type: option.type,
-              addon: option.addon,
-              service: option.service,
-              full_option: option
-            });
-          }
-        }
-      }
-    }
-
-    res.json({
-      tmdb_id: tmdbId,
-      total_addons: addonSamples.length,
-      addon_samples: addonSamples.slice(0, 5),
-      note: "Look for 'addon' field to see addon name"
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message,
-      details: error.response?.data
-    });
-  }
-});
-app.get('/api/debug-types/:tmdb_id', async (req, res) => {
-  try {
-    const tmdbId = req.params.tmdb_id;
-    
-    console.log(`🔍 Debug: Fetching streaming types for TMDB ID ${tmdbId}`);
-    
-    const response = await streamingClient.get(`/shows/movie/${tmdbId}`, {
-      params: {
-        series_granularity: 'show',
-        output_language: 'fr'
-      }
-    });
-
-    const typesSummary = {
-      subscription: 0,
-      rent: 0,
-      buy: 0,
-      free: 0,
-      addon: 0,
-      unknown: 0,
-      samples: []
+  // PWA Install prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
     };
     
-    if (response.data.streamingOptions) {
-      for (const [country, options] of Object.entries(response.data.streamingOptions)) {
-        for (const option of options) {
-          const type = option.type || 'unknown';
-          typesSummary[type] = (typesSummary[type] || 0) + 1;
-          
-          if (typesSummary.samples.length < 10) {
-            typesSummary.samples.push({
-              country,
-              platform: option.service?.name || option.service?.id,
-              type: option.type,
-              hasType: !!option.type,
-              link: option.link
-            });
-          }
-        }
-      }
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    }
+    
+    setDeferredPrompt(null);
+    setShowInstallPrompt(false);
+  };
+
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults([]);
+      return;
     }
 
-    res.json({
-      tmdb_id: tmdbId,
-      total_options: Object.values(response.data.streamingOptions || {}).flat().length,
-      types_breakdown: typesSummary,
-      note: "If 'unknown' is high, the API might not provide 'type' field"
-    });
+    const timer = setTimeout(() => {
+      searchMovies(searchQuery);
+    }, 500);
 
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const searchMovies = async (query) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/api/search?query=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setSearchResults(data.results || []);
+    } catch (err) {
+      setError('Erreur lors de la recherche');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectMovie = async (movie) => {
+    setSelectedMovie(movie);
+    setSearchResults([]);
+    setLoadingAvailability(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/api/movie/${movie.tmdb_id}/availability`);
+      const data = await response.json();
+      setAvailabilities(data.availabilities || []);
+      // Update selectedMovie with full details from backend (backdrop, overview, etc.)
+      if (data.movie) {
+        setSelectedMovie({
+          ...movie,
+          ...data.movie,
+          tmdb_id: movie.tmdb_id // Keep the original tmdb_id
+        });
+      }
+    } catch (err) {
+      setError('Erreur lors de la récupération des disponibilités');
+      console.error(err);
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  const goBack = () => {
+    setSelectedMovie(null);
+    setAvailabilities([]);
+    setSearchQuery('');
+  };
+
+  const filteredAvailabilities = availabilities.filter(a => {
+    // Platform filter
+    if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+    
+    // Streaming type filter (multi-select) - if empty, show all types
+    if (typeFilters.length > 0) {
+      const streamingType = a.streaming_type || 'subscription';
+      if (!typeFilters.includes(streamingType)) return false;
+    }
+    
+    // Country filter (new)
+    if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+    
+    // Audio/Subtitle filter
+    if (audioFilter === 'vf') return a.has_french_audio;
+    if (audioFilter === 'vostfr') return a.has_french_subtitles;
+    if (audioFilter === 'french') return a.has_french_audio || a.has_french_subtitles; // VF OR VOSTFR
+    
+    // 'all' = show everything (including VO only)
+    return true;
+  });
+
+  // Group availabilities by country
+  const groupedByCountry = filteredAvailabilities.reduce((acc, avail) => {
+    if (!avail || !avail.country_code) return acc; // Safety check
+    const countryCode = avail.country_code;
+    if (!acc[countryCode]) {
+      acc[countryCode] = {
+        country_code: countryCode,
+        country_name: avail.country_name || countryCode,
+        options: []
+      };
+    }
+    acc[countryCode].options.push(avail);
+    return acc;
+  }, {});
+
+  // Convert to array and sort by number of options (descending)
+  const countriesArray = Object.values(groupedByCountry).sort((a, b) => b.options.length - a.options.length);
+  
+  // Get unique countries for filter
+  let availableCountries = [];
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      const uniqueCountries = new Map();
+      availabilities.forEach(a => {
+        if (a && a.country_code && a.country_name) {
+          uniqueCountries.set(a.country_code, {
+            code: a.country_code,
+            name: a.country_name
+          });
+        }
+      });
+      availableCountries = Array.from(uniqueCountries.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
   } catch (error) {
-    res.status(500).json({
-      error: error.message,
-      details: error.response?.data
-    });
+    console.error('availableCountries error:', error);
+    availableCountries = [];
   }
-});
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+  // Get unique platforms from availabilities
+  let availablePlatforms = [];
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      availablePlatforms = [...new Set(availabilities.filter(a => a && a.platform).map(a => a.platform))].sort();
+    }
+  } catch (error) {
+    console.error('availablePlatforms error:', error);
+    availablePlatforms = [];
+  }
+  
+  // Count films with French content
+  let frenchContentCount = 0;
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      frenchContentCount = availabilities.filter(a => a && (a.has_french_audio || a.has_french_subtitles)).length;
+    }
+  } catch (error) {
+    console.error('frenchContentCount error:', error);
+    frenchContentCount = 0;
+  }
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setAudioFilter('french'); // Reset to 'french' (VF or VOSTFR) by default
+    setPlatformFilter('all');
+    setCountryFilter('all');
+    setTypeFilters(['subscription', 'rent', 'buy', 'addon', 'free']);
+  };
+  
+  // Check if any filters are active
+  const hasActiveFilters = audioFilter !== 'french' || // Changed from 'all' to 'french'
+                          platformFilter !== 'all' || 
+                          countryFilter !== 'all' ||
+                          typeFilters.length < 5;
+  
+  // Toggle country expansion
+  const toggleCountry = (countryCode) => {
+    setExpandedCountries(prev => ({
+      ...prev,
+      [countryCode]: !prev[countryCode]
+    }));
+  };
+  
+  // Toggle streaming type filter (multi-select)
+  const toggleTypeFilter = (type) => {
+    if (typeFilters.includes(type)) {
+      // Remove if already selected
+      setTypeFilters(typeFilters.filter(t => t !== type));
+    } else {
+      // Add if not selected
+      setTypeFilters([...typeFilters, type]);
+    }
+  };
+  
+  // Count by type (dynamic based on current filters, BUT excluding type filter itself)
+  const typeCount = {
+    subscription: 0,
+    rent: 0,
+    buy: 0,
+    addon: 0,
+    free: 0
+  };
+  
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      // Count based on all availabilities, but filtered by audio/platform/country (NOT by type)
+      const baseFiltered = availabilities.filter(a => {
+        if (!a) return false;
+        
+        // Apply platform filter
+        if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+        
+        // Apply country filter
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        // Apply audio filter
+        if (audioFilter === 'vf' && !a.has_french_audio) return false;
+        if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+        if (audioFilter === 'french' && !a.has_french_audio && !a.has_french_subtitles) return false;
+        
+        return true;
+      });
+      
+      // Count by type in the base filtered results
+      typeCount.subscription = baseFiltered.filter(a => (a.streaming_type || 'subscription') === 'subscription').length;
+      typeCount.rent = baseFiltered.filter(a => a.streaming_type === 'rent').length;
+      typeCount.buy = baseFiltered.filter(a => a.streaming_type === 'buy').length;
+      typeCount.addon = baseFiltered.filter(a => a.streaming_type === 'addon').length;
+      typeCount.free = baseFiltered.filter(a => a.streaming_type === 'free').length;
+    }
+  } catch (error) {
+    console.error('typeCount error:', error);
+  }
+  
+  // Count VF/VOSTFR based on current filters (excluding audio filter itself)
+  const getAudioCount = (audioType) => {
+    try {
+      return availabilities.filter(a => {
+        if (!a) return false; // Safety check
+        
+        // Apply all filters except audio filter
+        if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+        
+        // Apply type filter - if empty, show all types
+        if (typeFilters.length > 0) {
+          const streamingType = a.streaming_type || 'subscription';
+          if (!typeFilters.includes(streamingType)) return false;
+        }
+        
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        // Then count based on audio type
+        if (audioType === 'vf') return a.has_french_audio;
+        if (audioType === 'vostfr') return a.has_french_subtitles;
+        if (audioType === 'french') return a.has_french_audio || a.has_french_subtitles; // VF OR VOSTFR
+        return true; // 'all'
+      }).length;
+    } catch (error) {
+      console.error('getAudioCount error:', error);
+      return 0;
+    }
+  };
+  
+  // Count platforms based on current filters (excluding platform filter itself)
+  const getPlatformCount = (platform) => {
+    try {
+      return availabilities.filter(a => {
+        if (!a) return false; // Safety check
+        
+        // Apply all filters except platform filter
+        // Apply type filter - if empty, show all types
+        if (typeFilters.length > 0) {
+          const streamingType = a.streaming_type || 'subscription';
+          if (!typeFilters.includes(streamingType)) return false;
+        }
+        
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        if (audioFilter === 'vf' && !a.has_french_audio) return false;
+        if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+        if (audioFilter === 'french' && !a.has_french_audio && !a.has_french_subtitles) return false;
+        
+        // Then count based on platform
+        return a.platform === platform;
+      }).length;
+    } catch (error) {
+      console.error('getPlatformCount error:', error);
+      return 0;
+    }
+  };
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Cache duration: ${CACHE_DURATION / (1000 * 60 * 60 * 24)} days`);
-  console.log(`🎬 Platforms supported: ${Object.values(PLATFORMS).join(', ')}`);
-});
+  return (
+    <div className="min-h-screen bg-black">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 relative z-10">
+          <div className="flex items-center justify-center">
+            <div className="text-center">
+              {/* Logo stylé */}
+              <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <div className="bg-white rounded-xl md:rounded-2xl p-2 md:p-4 shadow-2xl transform -rotate-6">
+                  <Film className="w-6 h-6 md:w-12 md:h-12 text-red-600" />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-baseline gap-1 md:gap-2">
+                    <span className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter">VF</span>
+                    <span className="text-xl md:text-3xl lg:text-4xl font-bold text-white/90">Movie</span>
+                  </div>
+                  <div className="text-base md:text-2xl lg:text-3xl font-black text-red-200 -mt-1 md:-mt-2">FINDER</div>
+                </div>
+              </div>
+              <p className="text-red-100 text-xs md:text-base lg:text-lg font-semibold">
+                🌍 Films en français · Partout dans le monde
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* iOS Install Instructions */}
+      {isIOS && showIOSPrompt && !window.navigator.standalone && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-2 md:border-b-4 border-blue-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+            <div className="flex items-start justify-between flex-wrap gap-2 md:gap-4">
+              <div className="flex items-start gap-2 md:gap-3">
+                <div className="bg-white rounded-lg md:rounded-xl p-1 md:p-2 flex-shrink-0">
+                  <Film className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm md:text-lg flex items-center gap-2">
+                    📱 Installer l'app
+                  </p>
+                  <p className="text-blue-100 text-xs md:text-sm mt-0.5 md:mt-1">
+                    <span className="hidden md:inline">Appuyez sur </span>
+                    <span className="inline-flex items-center mx-1 px-1 md:px-2 py-0.5 bg-white/20 rounded">
+                      <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
+                      </svg>
+                    </span> 
+                    <span className="hidden md:inline">puis </span>"Sur l'écran d'accueil"
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowIOSPrompt(false)}
+                className="text-white hover:text-blue-100 px-2 md:px-4 font-medium text-xs md:text-sm"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PWA Install Prompt */}
+      {showInstallPrompt && (
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 border-b-2 md:border-b-4 border-green-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+            <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="bg-white rounded-lg md:rounded-xl p-1 md:p-2">
+                  <Film className="w-4 h-4 md:w-6 md:h-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-sm md:text-lg">📱 Installer l'app</p>
+                  <p className="text-green-100 text-xs md:text-sm hidden md:block">Accédez rapidement depuis votre écran d'accueil!</p>
+                </div>
+              </div>
+              <div className="flex gap-2 md:gap-3">
+                <button
+                  onClick={handleInstallClick}
+                  className="bg-white text-green-600 px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-black hover:bg-green-50 transition-all shadow-lg"
+                >
+                  Installer
+                </button>
+                <button
+                  onClick={() => setShowInstallPrompt(false)}
+                  className="text-white hover:text-green-100 px-2 md:px-4 text-sm md:text-base font-medium"
+                >
+                  <span className="md:hidden">✕</span>
+                  <span className="hidden md:inline">Plus tard</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        {/* Disclaimer */}
+        <div className="mb-4 md:mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg md:rounded-xl p-2 md:p-4 flex items-start gap-2 md:gap-3">
+          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+          <div className="text-xs md:text-sm text-yellow-200">
+            <strong className="hidden md:inline">Info importante : </strong>Les données proviennent d'une base tierce<span className="hidden md:inline"> mise à jour quotidiennement. Certaines informations peuvent être incomplètes ou obsolètes</span>. Vérifiez sur Netflix.
+          </div>
+        </div>
+
+        {!selectedMovie && (
+          <>
+            {/* Search Hero */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 border border-gray-700 shadow-2xl mb-6 md:mb-8">
+              <div className="text-center mb-4 md:mb-8">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3">
+                  Trouvez votre film en VF 🎬
+                </h2>
+                <p className="text-gray-300 text-sm md:text-lg hidden md:block">
+                  Recherchez parmi des milliers de films disponibles sur Netflix dans le monde
+                </p>
+              </div>
+
+              <div className="relative max-w-3xl mx-auto">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Rechercher un film... (ex: Inception, Matrix, Amélie)"
+                  className="w-full pl-14 pr-6 py-5 bg-white rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-red-500/50 text-lg font-medium shadow-xl transition-all"
+                />
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="mt-6 bg-white rounded-2xl shadow-2xl max-h-96 overflow-y-auto">
+                  {searchResults.map((movie) => (
+                    <div
+                      key={movie.tmdb_id}
+                      onClick={() => selectMovie(movie)}
+                      className="p-4 hover:bg-red-50 cursor-pointer border-b last:border-b-0 transition-all hover:scale-[1.01]"
+                    >
+                      <div className="flex items-center gap-4">
+                        {movie.poster ? (
+                          <img src={movie.poster} alt={movie.title} className="w-16 h-24 object-cover rounded-lg shadow-md" />
+                        ) : (
+                          <div className="w-16 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <Film className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900 text-lg">{movie.title}</h3>
+                          <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                            📅 {movie.year}
+                            {movie.availability_count > 0 && (
+                              <>
+                                <span>·</span>
+                                <span className="text-green-600 font-semibold">
+                                  ✓ VF dans {movie.availability_count} pays
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {loading && (
+                <div className="mt-6 text-center text-white flex items-center justify-center gap-3">
+                  <Loader className="w-6 h-6 animate-spin" />
+                  <span className="text-lg font-medium">Recherche en cours...</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="mt-6 bg-red-500/20 border border-red-500/50 text-red-200 p-4 rounded-xl">
+                  {error}
+                </div>
+              )}
+            </div>
+
+            {/* VPN Section */}
+            <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 text-center shadow-2xl border border-red-500">
+              <Shield className="w-12 h-12 md:w-16 md:h-16 text-white mx-auto mb-3 md:mb-4" />
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-3 md:mb-4">
+                Besoin d'un VPN ?
+              </h3>
+              <p className="text-white/90 text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
+                Accédez aux catalogues Netflix du monde entier en toute sécurité
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
+                <a
+                  href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white text-red-600 px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl w-full sm:w-auto justify-center"
+                >
+                  <Zap className="w-4 h-4 md:w-5 md:h-5" />
+                  NordVPN
+                </a>
+                <a
+                  href="https://www.expressvpn.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-white/20 transition-all hover:scale-105 w-full sm:w-auto justify-center"
+                >
+                  <Tv className="w-4 h-4 md:w-5 md:h-5" />
+                  ExpressVPN
+                </a>
+              </div>
+              <p className="text-white/70 text-xs md:text-sm mt-4 md:mt-6">
+                💰 Économisez jusqu'à 60% avec nos liens partenaires
+              </p>
+            </div>
+          </>
+        )}
+
+        {selectedMovie && (
+          <div className="space-y-8">
+            {/* Movie Hero - Backdrop Design */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              {/* Backdrop Image */}
+              {selectedMovie.backdrop && (
+                <div className="absolute inset-0">
+                  <img
+                    src={selectedMovie.backdrop}
+                    alt={selectedMovie.title}
+                    className="w-full h-full object-cover"
+                    style={{ filter: 'blur(8px)', transform: 'scale(1.1)' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40"></div>
+                </div>
+              )}
+              
+              {/* Content */}
+              <div className="relative z-10 px-6 md:px-12 py-12 md:py-16">
+                <button
+                  onClick={goBack}
+                  className="flex items-center gap-2 text-white/90 hover:text-white mb-8 transition-colors font-medium group"
+                >
+                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                  Nouvelle recherche
+                </button>
+
+                <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                  {/* Poster */}
+                  {selectedMovie.poster && (
+                    <img
+                      src={selectedMovie.poster}
+                      alt={selectedMovie.title}
+                      className="w-48 md:w-64 rounded-2xl shadow-2xl border-4 border-white/20"
+                    />
+                  )}
+
+                  {/* Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    <h1 className="text-4xl md:text-6xl font-black text-white mb-2 leading-tight">
+                      {selectedMovie.title}
+                    </h1>
+                    
+                    {selectedMovie.original_title && selectedMovie.original_title !== selectedMovie.title && (
+                      <p className="text-white/70 text-lg md:text-xl mb-4 italic">
+                        {selectedMovie.original_title}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-4 justify-center md:justify-start mb-6 text-white/90">
+                      {selectedMovie.year && (
+                        <span className="text-lg md:text-xl font-medium">
+                          📅 {selectedMovie.year}
+                        </span>
+                      )}
+                      {selectedMovie.vote_average && (
+                        <>
+                          <span className="text-white/50">•</span>
+                          <span className="text-lg md:text-xl font-medium flex items-center gap-1">
+                            ⭐ {selectedMovie.vote_average.toFixed(1)}/10
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {selectedMovie.overview && (
+                      <p className="text-white/80 text-base md:text-lg leading-relaxed max-w-3xl">
+                        {selectedMovie.overview}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+              {/* Reset Filters Button */}
+              {hasActiveFilters && (
+                <div className="mb-4 space-y-2">
+                  <button
+                    onClick={resetFilters}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    Réinitialiser tous les filtres
+                  </button>
+                  <p className="text-gray-400 text-sm">
+                    📊 Affichage de <span className="text-white font-bold">{filteredAvailabilities.length}</span> résultat{filteredAvailabilities.length > 1 ? 's' : ''} sur <span className="text-white font-bold">{availabilities.length}</span> au total
+                  </p>
+                </div>
+              )}
+
+              {/* Filters Toggle Button */}
+              <button
+                onClick={() => setShowFiltersMenu(!showFiltersMenu)}
+                className="w-full mb-4 px-6 py-4 rounded-xl font-bold bg-gray-800 text-white hover:bg-gray-700 transition-all border-2 border-gray-600 flex items-center justify-between"
+              >
+                <span className="text-lg">🎚️ Filtres ({Object.keys({audioFilter, platformFilter, countryFilter, typeFilters}).length})</span>
+                <span className="text-2xl">{showFiltersMenu ? '▼' : '▶'}</span>
+              </button>
+
+                  {/* Collapsible Filters Menu */}
+                  {showFiltersMenu && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-gray-700 space-y-6">
+                      
+                      {/* Audio Filters */}
+                      <div>
+                        <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                          <span className="w-1 h-6 bg-red-500 rounded"></span>
+                          🎙️ LANGUE
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => setAudioFilter('french')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'french'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            🇫🇷 VF ou VOSTFR ({getAudioCount('french')})
+                          </button>
+                          <button
+                            onClick={() => setAudioFilter('vf')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'vf'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            🎙️ VF uniquement ({getAudioCount('vf')})
+                          </button>
+                          <button
+                            onClick={() => setAudioFilter('vostfr')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'vostfr'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            📝 VOSTFR uniquement ({getAudioCount('vostfr')})
+                          </button>
+                          <button
+                            onClick={() => setAudioFilter('all')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'all'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            🌍 Tout (VO inclus) ({getAudioCount('all')})
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Platform Filters */}
+                      {availablePlatforms.length > 1 && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            📺 PLATEFORME
+                          </p>
+                          <div className="flex gap-2 flex-wrap">
+                            <button
+                              onClick={() => setPlatformFilter('all')}
+                              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                platformFilter === 'all'
+                                  ? 'bg-white text-red-600 shadow-lg'
+                                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              Toutes
+                            </button>
+                            {availablePlatforms.map(platform => {
+                              const style = getPlatformStyle(platform);
+                              const count = getPlatformCount(platform);
+                              return (
+                                <button
+                                  key={platform}
+                                  onClick={() => setPlatformFilter(platform)}
+                                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    platformFilter === platform
+                                      ? `${style.bg} ${style.text} shadow-lg scale-105`
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  {style.icon} {platform} ({count})
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Type Filters */}
+                      {(typeCount.rent > 0 || typeCount.buy > 0 || typeCount.addon > 0) && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            💳 TYPE DE DISPONIBILITÉ
+                          </p>
+                          <div className="flex gap-2 flex-wrap">
+                            {typeCount.subscription > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('subscription')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('subscription')
+                                    ? 'bg-green-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                📺 Streaming ({typeCount.subscription})
+                              </button>
+                            )}
+                            {typeCount.rent > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('rent')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('rent')
+                                    ? 'bg-yellow-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                🎬 Location ({typeCount.rent})
+                              </button>
+                            )}
+                            {typeCount.buy > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('buy')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('buy')
+                                    ? 'bg-purple-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                💰 Achat ({typeCount.buy})
+                              </button>
+                            )}
+                            {typeCount.addon > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('addon')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('addon')
+                                    ? 'bg-blue-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                📡 Chaîne payante ({typeCount.addon})
+                              </button>
+                            )}
+                            {typeCount.free > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('free')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('free')
+                                    ? 'bg-cyan-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                🆓 Gratuit ({typeCount.free})
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-gray-500 text-xs mt-2">💡 Sélection multiple possible</p>
+                        </div>
+                      )}
+
+                      {/* Country Filter */}
+                      {availableCountries.length > 1 && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            🌍 PAYS
+                          </p>
+                          <select
+                            value={countryFilter}
+                            onChange={(e) => setCountryFilter(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-red-500 focus:outline-none font-medium"
+                          >
+                            <option value="all">Tous les pays ({availableCountries.length})</option>
+                            {availableCountries.map(country => {
+                              const count = availabilities.filter(a => a.country_code === country.code).length;
+                              return (
+                                <option key={country.code} value={country.code}>
+                                  {country.name} ({count})
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+            </div>
+
+            {loadingAvailability && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
+                <Loader className="w-16 h-16 text-red-500 mx-auto mb-6 animate-spin" />
+                <p className="text-white text-2xl font-bold mb-2">Recherche en cours...</p>
+                <p className="text-gray-400 text-lg">Analyse des catalogues Netflix dans le monde entier</p>
+              </div>
+            )}
+
+            {!loadingAvailability && filteredAvailabilities.length === 0 && availabilities.length > 0 && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
+                <Globe className="w-16 h-16 text-gray-500 mx-auto mb-6" />
+                <p className="text-gray-300 text-2xl font-bold mb-3">
+                  Aucun résultat avec ces filtres
+                </p>
+                <p className="text-gray-500 text-lg mb-6">
+                  Le film est disponible dans {availabilities.length} pays, mais aucun ne correspond à vos filtres actuels.
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
+                >
+                  <XCircle className="w-5 h-5" />
+                  Réinitialiser les filtres
+                </button>
+              </div>
+            )}
+
+            {!loadingAvailability && availabilities.length === 0 && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
+                <Globe className="w-16 h-16 text-gray-500 mx-auto mb-6" />
+                <p className="text-gray-300 text-2xl font-bold mb-3">
+                  Film non disponible en streaming
+                </p>
+                <p className="text-gray-500 text-lg">Ce film n'est peut-être pas disponible sur les plateformes de streaming ou les données ne sont pas encore disponibles</p>
+              </div>
+            )}
+
+            {!loadingAvailability && filteredAvailabilities.length > 0 && (
+              <div className="space-y-8">
+                {/* Summary */}
+                {frenchContentCount > 0 ? (
+                  <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-8 text-center shadow-2xl border border-green-500">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <CheckCircle className="w-10 h-10 text-white" />
+                      <div className="text-left">
+                        <h3 className="text-4xl font-black text-white">
+                          {[...new Set(availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).map(a => a.country_code))].length} pays
+                        </h3>
+                        <p className="text-green-100 text-lg font-medium">
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-green-100 text-xl font-medium mt-2">
+                      Film disponible avec contenu français
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-3xl p-8 text-center shadow-2xl border border-blue-500">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <Globe className="w-10 h-10 text-white" />
+                      <div className="text-left">
+                        <h3 className="text-4xl font-black text-white">
+                          {[...new Set(filteredAvailabilities.map(a => a.country_code))].length} pays
+                        </h3>
+                        <p className="text-blue-100 text-lg font-medium">
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-blue-100 text-xl font-medium mt-2">
+                      Film disponible (VO uniquement)
+                    </p>
+                  </div>
+                )}
+
+                {/* Countries - Grouped and Collapsible */}
+                {countriesArray && countriesArray.length > 0 && (
+                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+                    <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
+                      <span className="bg-red-600 w-2 h-8 rounded-full"></span>
+                      Pays ({countriesArray.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {countriesArray.map((country) => {
+                        const isExpanded = expandedCountries[country.country_code];
+                        const optionsCount = country.options.length;
+                        
+                        return (
+                          <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
+                            {/* Country Header - Clickable */}
+                            <button
+                              onClick={() => toggleCountry(country.country_code)}
+                              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800 transition-all"
+                            >
+                              <div className="flex items-center gap-4">
+                                <img 
+                                  src={`https://flagcdn.com/48x36/${country.country_code.toLowerCase()}.png`}
+                                  alt={`Drapeau ${country.country_name}`}
+                                  className="w-12 h-9 rounded shadow-lg border border-gray-600"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'inline';
+                                  }}
+                                />
+                                <span style={{display: 'none'}} className="text-3xl">🌍</span>
+                                <div className="text-left">
+                                  <h5 className="font-black text-white text-xl">{country.country_name}</h5>
+                                  <p className="text-gray-400 text-sm">
+                                    {optionsCount} option{optionsCount > 1 ? 's' : ''} disponible{optionsCount > 1 ? 's' : ''}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-red-500 font-black text-2xl">
+                                  {isExpanded ? '▼' : '▶'}
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Expanded Options */}
+                            {isExpanded && (
+                              <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
+                                {country.options.map((avail, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
+                                  >
+                                    <div className="flex items-start justify-between mb-3">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        {/* For addons, show addon name first */}
+                                        {avail.streaming_type === 'addon' && avail.addon_name ? (
+                                          <>
+                                            <span className="text-sm bg-blue-600 text-white px-3 py-1 rounded-full font-black">
+                                              📡 {avail.addon_name}
+                                            </span>
+                                            <span className="text-xs text-gray-400 italic">
+                                              (via {avail.platform})
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <span className={`text-sm ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
+                                            {getPlatformStyle(avail.platform).icon} {avail.platform}
+                                          </span>
+                                        )}
+                                        
+                                        {/* Show "INCLUS" badge for Prime subscription to clarify it's included */}
+                                        {avail.platform === 'Amazon Prime' && avail.streaming_type === 'subscription' && (
+                                          <span className="text-xs px-2 py-1 rounded bg-green-600 text-white font-bold">
+                                            ✓ INCLUS
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Type badges */}
+                                      <div className="flex flex-col gap-1 items-end">
+                                        {avail.streaming_type === 'addon' && (
+                                          <span className="text-xs px-2 py-1 rounded bg-orange-600 text-white font-bold">
+                                            💳 ABONNEMENT SÉPARÉ
+                                          </span>
+                                        )}
+                                        {avail.streaming_type === 'rent' && (
+                                          <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
+                                            🎬 LOCATION
+                                          </span>
+                                        )}
+                                        {avail.streaming_type === 'buy' && (
+                                          <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
+                                            💰 ACHAT
+                                          </span>
+                                        )}
+                                        {avail.streaming_type === 'free' && (
+                                          <span className="text-sm px-3 py-1 rounded-lg bg-cyan-600 text-white font-black shadow-lg">
+                                            🆓 GRATUIT
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 mb-3 text-sm">
+                                      <div className="flex items-center gap-2">
+                                        {avail.has_french_audio ? (
+                                          <CheckCircle className="w-4 h-4 text-green-400" />
+                                        ) : (
+                                          <XCircle className="w-4 h-4 text-gray-600" />
+                                        )}
+                                        <span className={avail.has_french_audio ? 'text-green-400 font-medium' : 'text-gray-500'}>
+                                          VF
+                                        </span>
+                                      </div>
+
+                                      <div className="flex items-center gap-2">
+                                        {avail.has_french_subtitles ? (
+                                          <CheckCircle className="w-4 h-4 text-green-400" />
+                                        ) : (
+                                          <XCircle className="w-4 h-4 text-gray-600" />
+                                        )}
+                                        <span className={avail.has_french_subtitles ? 'text-green-400 font-medium' : 'text-gray-500'}>
+                                          VOSTFR
+                                        </span>
+                                      </div>
+
+                                      {avail.quality && (
+                                        <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
+                                          {avail.quality.toUpperCase()}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {avail.streaming_url && (
+                                      <a
+                                        href={avail.streaming_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`block text-center ${
+                                          avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
+                                        } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
+                                      >
+                                        {avail.streaming_type === 'rent' ? '🎬 Louer' :
+                                         avail.streaming_type === 'buy' ? '💰 Acheter' :
+                                         avail.streaming_type === 'addon' && avail.addon_name ? `💳 S'abonner à ${avail.addon_name}` :
+                                         avail.streaming_type === 'addon' ? `📡 Chaîne payante` :
+                                         avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
+                                         `▶ Voir sur ${avail.platform}`}
+                                      </a>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* VPN CTA */}
+                <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
+                  <Shield className="w-16 h-16 text-white mx-auto mb-4" />
+                  <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
+                    Débloquez ce film avec un VPN
+                  </h3>
+                  <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
+                    Changez virtuellement de pays pour accéder à n'importe quel catalogue Netflix
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a
+                      href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-white text-red-600 px-8 py-4 rounded-xl font-black text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl"
+                    >
+                      <Zap className="w-5 h-5" />
+                      Essayer NordVPN
+                    </a>
+                    <a
+                      href="https://www.expressvpn.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-all hover:scale-105"
+                    >
+                      <Tv className="w-5 h-5" />
+                      Essayer ExpressVPN
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-20 border-t border-gray-800 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center space-y-3">
+            <p className="text-gray-400 text-sm">
+              Données fournies par TMDb et uNoGS · Non affilié à Netflix
+            </p>
+            <p className="text-gray-500 text-sm">
+              🇫🇷 Fait avec ❤️ pour les francophones du monde entier
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
