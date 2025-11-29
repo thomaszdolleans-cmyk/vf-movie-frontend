@@ -145,7 +145,6 @@ export default function App() {
     // Audio/Subtitle filter
     if (audioFilter === 'vf') return a.has_french_audio;
     if (audioFilter === 'vostfr') return a.has_french_subtitles;
-    if (audioFilter === 'french') return a.has_french_audio || a.has_french_subtitles;
     
     // 'all' = show everything
     return true;
@@ -435,16 +434,6 @@ export default function App() {
                       Tous les résultats ({availabilities.length})
                     </button>
                     <button
-                      onClick={() => setAudioFilter('french')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
-                        audioFilter === 'french'
-                          ? 'bg-red-600 text-white shadow-lg scale-105'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      🇫🇷 Avec français ({frenchContentCount})
-                    </button>
-                    <button
                       onClick={() => setAudioFilter('vf')}
                       className={`px-6 py-3 rounded-xl font-bold transition-all ${
                         audioFilter === 'vf'
@@ -540,22 +529,41 @@ export default function App() {
             {!loadingAvailability && filteredAvailabilities.length > 0 && (
               <div className="space-y-8">
                 {/* Summary */}
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-8 text-center shadow-2xl border border-green-500">
-                  <div className="flex items-center justify-center gap-3 mb-3">
-                    <CheckCircle className="w-10 h-10 text-white" />
-                    <div className="text-left">
-                      <h3 className="text-4xl font-black text-white">
-                        {[...new Set(filteredAvailabilities.map(a => a.country_code))].length} pays
-                      </h3>
-                      <p className="text-green-100 text-lg font-medium">
-                        sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
-                      </p>
+                {frenchContentCount > 0 ? (
+                  <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-8 text-center shadow-2xl border border-green-500">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <CheckCircle className="w-10 h-10 text-white" />
+                      <div className="text-left">
+                        <h3 className="text-4xl font-black text-white">
+                          {[...new Set(availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).map(a => a.country_code))].length} pays
+                        </h3>
+                        <p className="text-green-100 text-lg font-medium">
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
                     </div>
+                    <p className="text-green-100 text-xl font-medium mt-2">
+                      Film disponible avec contenu français
+                    </p>
                   </div>
-                  <p className="text-green-100 text-xl font-medium mt-2">
-                    Film disponible avec contenu français
-                  </p>
-                </div>
+                ) : (
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-3xl p-8 text-center shadow-2xl border border-blue-500">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <Globe className="w-10 h-10 text-white" />
+                      <div className="text-left">
+                        <h3 className="text-4xl font-black text-white">
+                          {[...new Set(filteredAvailabilities.map(a => a.country_code))].length} pays
+                        </h3>
+                        <p className="text-blue-100 text-lg font-medium">
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-blue-100 text-xl font-medium mt-2">
+                      Film disponible (VO uniquement)
+                    </p>
+                  </div>
+                )}
 
                 {/* Regions */}
                 {Object.keys(groupedAvailabilities).map(region => (
