@@ -39,7 +39,8 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [availabilities, setAvailabilities] = useState([]);
   const [audioFilter, setAudioFilter] = useState('all');
-  const [platformFilter, setPlatformFilter] = useState('all'); // NEW: Platform filter
+  const [platformFilter, setPlatformFilter] = useState('all');
+  const [typeFilters, setTypeFilters] = useState(['subscription', 'rent', 'buy', 'addon', 'free']); // Multi-select for streaming types
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
@@ -142,6 +143,10 @@ export default function App() {
     // Platform filter
     if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
     
+    // Streaming type filter (multi-select)
+    const streamingType = a.streaming_type || 'subscription';
+    if (!typeFilters.includes(streamingType)) return false;
+    
     // Audio/Subtitle filter
     if (audioFilter === 'vf') return a.has_french_audio;
     if (audioFilter === 'vostfr') return a.has_french_subtitles;
@@ -155,6 +160,28 @@ export default function App() {
   
   // Count films with French content
   const frenchContentCount = availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).length;
+  
+  // Toggle streaming type filter (multi-select)
+  const toggleTypeFilter = (type) => {
+    if (typeFilters.includes(type)) {
+      // Remove if already selected (but keep at least one)
+      if (typeFilters.length > 1) {
+        setTypeFilters(typeFilters.filter(t => t !== type));
+      }
+    } else {
+      // Add if not selected
+      setTypeFilters([...typeFilters, type]);
+    }
+  };
+  
+  // Count by type
+  const typeCount = {
+    subscription: availabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length,
+    rent: availabilities.filter(a => a.streaming_type === 'rent').length,
+    buy: availabilities.filter(a => a.streaming_type === 'buy').length,
+    addon: availabilities.filter(a => a.streaming_type === 'addon').length,
+    free: availabilities.filter(a => a.streaming_type === 'free').length
+  };
 
   const groupByRegion = (availabilities) => {
     const regions = {
@@ -490,6 +517,76 @@ export default function App() {
                       </div>
                     </div>
                   )}
+
+                  {/* Type Filters (Subscription / VOD) */}
+                  {(typeCount.rent > 0 || typeCount.buy > 0 || typeCount.addon > 0) && (
+                    <div className="mt-4">
+                      <p className="text-gray-400 text-sm mb-2">Type de disponibilité (sélection multiple):</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {typeCount.subscription > 0 && (
+                          <button
+                            onClick={() => toggleTypeFilter('subscription')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              typeFilters.includes('subscription')
+                                ? 'bg-green-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                            }`}
+                          >
+                            📺 Streaming ({typeCount.subscription})
+                          </button>
+                        )}
+                        {typeCount.rent > 0 && (
+                          <button
+                            onClick={() => toggleTypeFilter('rent')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              typeFilters.includes('rent')
+                                ? 'bg-yellow-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                            }`}
+                          >
+                            🎬 Location ({typeCount.rent})
+                          </button>
+                        )}
+                        {typeCount.buy > 0 && (
+                          <button
+                            onClick={() => toggleTypeFilter('buy')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              typeFilters.includes('buy')
+                                ? 'bg-purple-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                            }`}
+                          >
+                            💰 Achat ({typeCount.buy})
+                          </button>
+                        )}
+                        {typeCount.addon > 0 && (
+                          <button
+                            onClick={() => toggleTypeFilter('addon')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              typeFilters.includes('addon')
+                                ? 'bg-blue-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                            }`}
+                          >
+                            📡 Chaîne payante ({typeCount.addon})
+                          </button>
+                        )}
+                        {typeCount.free > 0 && (
+                          <button
+                            onClick={() => toggleTypeFilter('free')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              typeFilters.includes('free')
+                                ? 'bg-cyan-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                            }`}
+                          >
+                            🆓 Gratuit ({typeCount.free})
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-gray-500 text-xs mt-2">💡 Cliquez sur plusieurs types pour combiner les résultats</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -599,10 +696,15 @@ export default function App() {
                                 {getPlatformStyle(avail.platform).icon} {avail.platform.toUpperCase()}
                               </span>
                               {avail.streaming_type && avail.streaming_type !== 'subscription' && (
-                                <span className="text-xs bg-yellow-600 text-white px-2 py-1 rounded font-bold">
+                                <span className={`text-xs px-2 py-1 rounded font-bold ${
+                                  avail.streaming_type === 'addon' ? 'bg-blue-600' :
+                                  avail.streaming_type === 'free' ? 'bg-cyan-600' :
+                                  'bg-yellow-600'
+                                } text-white`}>
                                   {avail.streaming_type === 'rent' ? '🎬 LOCATION' : 
                                    avail.streaming_type === 'buy' ? '💰 ACHAT' : 
                                    avail.streaming_type === 'free' ? '🆓 GRATUIT' : 
+                                   avail.streaming_type === 'addon' ? '📡 CHAÎNE PAYANTE' :
                                    avail.streaming_type.toUpperCase()}
                                 </span>
                               )}
@@ -650,6 +752,8 @@ export default function App() {
                             >
                               {avail.streaming_type === 'rent' ? '🎬 Louer' :
                                avail.streaming_type === 'buy' ? '💰 Acheter' :
+                               avail.streaming_type === 'addon' ? `📡 Voir sur ${avail.platform}` :
+                               avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
                                `▶ Voir sur ${avail.platform}`}
                             </a>
                           )}
