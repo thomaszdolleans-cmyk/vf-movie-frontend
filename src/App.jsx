@@ -161,6 +161,18 @@ export default function App() {
   // Count films with French content
   const frenchContentCount = availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).length;
   
+  // Reset all filters
+  const resetFilters = () => {
+    setAudioFilter('all');
+    setPlatformFilter('all');
+    setTypeFilters(['subscription', 'rent', 'buy', 'addon', 'free']);
+  };
+  
+  // Check if any filters are active
+  const hasActiveFilters = audioFilter !== 'all' || 
+                          platformFilter !== 'all' || 
+                          typeFilters.length < 5;
+  
   // Toggle streaming type filter (multi-select)
   const toggleTypeFilter = (type) => {
     if (typeFilters.includes(type)) {
@@ -480,6 +492,22 @@ export default function App() {
                   )}
                   <p className="text-gray-500 text-xl mb-6">📅 {selectedMovie.year}</p>
 
+                  {/* Reset Filters Button */}
+                  {hasActiveFilters && (
+                    <div className="mb-4 space-y-2">
+                      <button
+                        onClick={resetFilters}
+                        className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
+                      >
+                        <XCircle className="w-5 h-5" />
+                        Réinitialiser tous les filtres
+                      </button>
+                      <p className="text-gray-400 text-sm">
+                        📊 Affichage de <span className="text-white font-bold">{filteredAvailabilities.length}</span> résultat{filteredAvailabilities.length > 1 ? 's' : ''} sur <span className="text-white font-bold">{availabilities.length}</span> au total
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex gap-3 flex-wrap">
                     <button
                       onClick={() => setAudioFilter('all')}
@@ -636,11 +664,16 @@ export default function App() {
                 <p className="text-gray-300 text-2xl font-bold mb-3">
                   Aucun résultat avec ces filtres
                 </p>
-                <p className="text-gray-500 text-lg">
-                  Le film est disponible dans {availabilities.length} pays, mais aucun ne correspond à vos filtres.
-                  <br />
-                  Essayez "Tous les résultats" pour voir toutes les options.
+                <p className="text-gray-500 text-lg mb-6">
+                  Le film est disponible dans {availabilities.length} pays, mais aucun ne correspond à vos filtres actuels.
                 </p>
+                <button
+                  onClick={resetFilters}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
+                >
+                  <XCircle className="w-5 h-5" />
+                  Réinitialiser les filtres
+                </button>
               </div>
             )}
 
