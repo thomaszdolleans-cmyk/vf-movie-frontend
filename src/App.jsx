@@ -128,6 +128,14 @@ export default function App() {
       const response = await fetch(`${API_URL}/api/movie/${movie.tmdb_id}/availability`);
       const data = await response.json();
       setAvailabilities(data.availabilities || []);
+      // Update selectedMovie with full details from backend (backdrop, overview, etc.)
+      if (data.movie) {
+        setSelectedMovie({
+          ...movie,
+          ...data.movie,
+          tmdb_id: movie.tmdb_id // Keep the original tmdb_id
+        });
+      }
     } catch (err) {
       setError('Erreur lors de la récupération des disponibilités');
       console.error(err);
@@ -180,16 +188,46 @@ export default function App() {
   const countriesArray = Object.values(groupedByCountry).sort((a, b) => b.options.length - a.options.length);
   
   // Get unique countries for filter
-  const availableCountries = [...new Set(availabilities.map(a => ({
-    code: a.country_code,
-    name: a.country_name
-  })).map(c => JSON.stringify(c)))].map(c => JSON.parse(c)).sort((a, b) => a.name.localeCompare(b.name));
+  let availableCountries = [];
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      const uniqueCountries = new Map();
+      availabilities.forEach(a => {
+        if (a && a.country_code && a.country_name) {
+          uniqueCountries.set(a.country_code, {
+            code: a.country_code,
+            name: a.country_name
+          });
+        }
+      });
+      availableCountries = Array.from(uniqueCountries.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+  } catch (error) {
+    console.error('availableCountries error:', error);
+    availableCountries = [];
+  }
 
   // Get unique platforms from availabilities
-  const availablePlatforms = [...new Set(availabilities.map(a => a.platform))].sort();
+  let availablePlatforms = [];
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      availablePlatforms = [...new Set(availabilities.filter(a => a && a.platform).map(a => a.platform))].sort();
+    }
+  } catch (error) {
+    console.error('availablePlatforms error:', error);
+    availablePlatforms = [];
+  }
   
   // Count films with French content
-  const frenchContentCount = availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).length;
+  let frenchContentCount = 0;
+  try {
+    if (availabilities && Array.isArray(availabilities)) {
+      frenchContentCount = availabilities.filter(a => a && (a.has_french_audio || a.has_french_subtitles)).length;
+    }
+  } catch (error) {
+    console.error('frenchContentCount error:', error);
+    frenchContentCount = 0;
+  }
   
   // Reset all filters
   const resetFilters = () => {
@@ -228,42 +266,72 @@ export default function App() {
   
   // Count by type (dynamic based on current filters)
   const typeCount = {
-    subscription: filteredAvailabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length,
-    rent: filteredAvailabilities.filter(a => a.streaming_type === 'rent').length,
-    buy: filteredAvailabilities.filter(a => a.streaming_type === 'buy').length,
-    addon: filteredAvailabilities.filter(a => a.streaming_type === 'addon').length,
-    free: filteredAvailabilities.filter(a => a.streaming_type === 'free').length
+    subscription: 0,
+    rent: 0,
+    buy: 0,
+    addon: 0,
+    free: 0
   };
+  
+  try {
+    if (filteredAvailabilities && Array.isArray(filteredAvailabilities)) {
+      typeCount.subscription = filteredAvailabilities.filter(a => (a.streaming_type || 'subscription') === 'subscription').length;
+      typeCount.rent = filteredAvailabilities.filter(a => a.streaming_type === 'rent').length;
+      typeCount.buy = filteredAvailabilities.filter(a => a.streaming_type === 'buy').length;
+      typeCount.addon = filteredAvailabilities.filter(a => a.streaming_type === 'addon').length;
+      typeCount.free = filteredAvailabilities.filter(a => a.streaming_type === 'free').length;
+    }
+  } catch (error) {
+    console.error('typeCount error:', error);
+  }
   
   // Count VF/VOSTFR based on current filters (excluding audio filter itself)
   const getAudioCount = (audioType) => {
-    return availabilities.filter(a => {
-      // Apply all filters except audio filter
-      if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
-      
-      const streamingType = a.streaming_type || 'subscription';
-      if (!typeFilters.includes(streamingType)) return false;
-      
-      // Then count based on audio type
-      if (audioType === 'vf') return a.has_french_audio;
-      if (audioType === 'vostfr') return a.has_french_subtitles;
-      return true; // 'all'
-    }).length;
+    try {
+      return availabilities.filter(a => {
+        if (!a) return false; // Safety check
+        
+        // Apply all filters except audio filter
+        if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+        
+        const streamingType = a.streaming_type || 'subscription';
+        if (!typeFilters.includes(streamingType)) return false;
+        
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        // Then count based on audio type
+        if (audioType === 'vf') return a.has_french_audio;
+        if (audioType === 'vostfr') return a.has_french_subtitles;
+        return true; // 'all'
+      }).length;
+    } catch (error) {
+      console.error('getAudioCount error:', error);
+      return 0;
+    }
   };
   
   // Count platforms based on current filters (excluding platform filter itself)
   const getPlatformCount = (platform) => {
-    return availabilities.filter(a => {
-      // Apply all filters except platform filter
-      const streamingType = a.streaming_type || 'subscription';
-      if (!typeFilters.includes(streamingType)) return false;
-      
-      if (audioFilter === 'vf' && !a.has_french_audio) return false;
-      if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
-      
-      // Then count based on platform
-      return a.platform === platform;
-    }).length;
+    try {
+      return availabilities.filter(a => {
+        if (!a) return false; // Safety check
+        
+        // Apply all filters except platform filter
+        const streamingType = a.streaming_type || 'subscription';
+        if (!typeFilters.includes(streamingType)) return false;
+        
+        if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+        
+        if (audioFilter === 'vf' && !a.has_french_audio) return false;
+        if (audioFilter === 'vostfr' && !a.has_french_subtitles) return false;
+        
+        // Then count based on platform
+        return a.platform === platform;
+      }).length;
+    } catch (error) {
+      console.error('getPlatformCount error:', error);
+      return 0;
+    }
   };
 
   return (
@@ -485,55 +553,105 @@ export default function App() {
 
         {selectedMovie && (
           <div className="space-y-8">
-            {/* Movie Header */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
-              <button
-                onClick={goBack}
-                className="flex items-center gap-2 text-red-400 hover:text-red-300 mb-6 transition-colors font-medium group"
-              >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                Nouvelle recherche
-              </button>
-
-              <div className="flex gap-6 flex-col md:flex-row">
-                {selectedMovie.poster && (
+            {/* Movie Hero - Backdrop Design */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              {/* Backdrop Image */}
+              {selectedMovie.backdrop && (
+                <div className="absolute inset-0">
                   <img
-                    src={selectedMovie.poster.replace('w200', 'w500')}
+                    src={selectedMovie.backdrop}
                     alt={selectedMovie.title}
-                    className="w-full md:w-56 rounded-2xl shadow-2xl border-4 border-gray-700"
+                    className="w-full h-full object-cover"
+                    style={{ filter: 'blur(8px)', transform: 'scale(1.1)' }}
                   />
-                )}
-                <div className="flex-1">
-                  <h2 className="text-4xl md:text-5xl font-black text-white mb-3 leading-tight">{selectedMovie.title}</h2>
-                  {selectedMovie.original_title && selectedMovie.original_title !== selectedMovie.title && (
-                    <p className="text-gray-400 text-lg mb-2">Titre original : {selectedMovie.original_title}</p>
-                  )}
-                  <p className="text-gray-500 text-xl mb-6">📅 {selectedMovie.year}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40"></div>
+                </div>
+              )}
+              
+              {/* Content */}
+              <div className="relative z-10 px-6 md:px-12 py-12 md:py-16">
+                <button
+                  onClick={goBack}
+                  className="flex items-center gap-2 text-white/90 hover:text-white mb-8 transition-colors font-medium group"
+                >
+                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                  Nouvelle recherche
+                </button>
 
-                  {/* Reset Filters Button */}
-                  {hasActiveFilters && (
-                    <div className="mb-4 space-y-2">
-                      <button
-                        onClick={resetFilters}
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
-                      >
-                        <XCircle className="w-5 h-5" />
-                        Réinitialiser tous les filtres
-                      </button>
-                      <p className="text-gray-400 text-sm">
-                        📊 Affichage de <span className="text-white font-bold">{filteredAvailabilities.length}</span> résultat{filteredAvailabilities.length > 1 ? 's' : ''} sur <span className="text-white font-bold">{availabilities.length}</span> au total
+                <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                  {/* Poster */}
+                  {selectedMovie.poster && (
+                    <img
+                      src={selectedMovie.poster}
+                      alt={selectedMovie.title}
+                      className="w-48 md:w-64 rounded-2xl shadow-2xl border-4 border-white/20"
+                    />
+                  )}
+
+                  {/* Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    <h1 className="text-4xl md:text-6xl font-black text-white mb-2 leading-tight">
+                      {selectedMovie.title}
+                    </h1>
+                    
+                    {selectedMovie.original_title && selectedMovie.original_title !== selectedMovie.title && (
+                      <p className="text-white/70 text-lg md:text-xl mb-4 italic">
+                        {selectedMovie.original_title}
                       </p>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Filters Toggle Button */}
+                    <div className="flex items-center gap-4 justify-center md:justify-start mb-6 text-white/90">
+                      {selectedMovie.year && (
+                        <span className="text-lg md:text-xl font-medium">
+                          📅 {selectedMovie.year}
+                        </span>
+                      )}
+                      {selectedMovie.vote_average && (
+                        <>
+                          <span className="text-white/50">•</span>
+                          <span className="text-lg md:text-xl font-medium flex items-center gap-1">
+                            ⭐ {selectedMovie.vote_average.toFixed(1)}/10
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {selectedMovie.overview && (
+                      <p className="text-white/80 text-base md:text-lg leading-relaxed max-w-3xl">
+                        {selectedMovie.overview}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+              {/* Reset Filters Button */}
+              {hasActiveFilters && (
+                <div className="mb-4 space-y-2">
                   <button
-                    onClick={() => setShowFiltersMenu(!showFiltersMenu)}
-                    className="w-full mb-4 px-6 py-4 rounded-xl font-bold bg-gray-800 text-white hover:bg-gray-700 transition-all border-2 border-gray-600 flex items-center justify-between"
+                    onClick={resetFilters}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 transition-all hover:scale-105 shadow-lg"
                   >
-                    <span className="text-lg">🎚️ Filtres ({Object.keys({audioFilter, platformFilter, countryFilter, typeFilters}).length})</span>
-                    <span className="text-2xl">{showFiltersMenu ? '▼' : '▶'}</span>
+                    <XCircle className="w-5 h-5" />
+                    Réinitialiser tous les filtres
                   </button>
+                  <p className="text-gray-400 text-sm">
+                    📊 Affichage de <span className="text-white font-bold">{filteredAvailabilities.length}</span> résultat{filteredAvailabilities.length > 1 ? 's' : ''} sur <span className="text-white font-bold">{availabilities.length}</span> au total
+                  </p>
+                </div>
+              )}
+
+              {/* Filters Toggle Button */}
+              <button
+                onClick={() => setShowFiltersMenu(!showFiltersMenu)}
+                className="w-full mb-4 px-6 py-4 rounded-xl font-bold bg-gray-800 text-white hover:bg-gray-700 transition-all border-2 border-gray-600 flex items-center justify-between"
+              >
+                <span className="text-lg">🎚️ Filtres ({Object.keys({audioFilter, platformFilter, countryFilter, typeFilters}).length})</span>
+                <span className="text-2xl">{showFiltersMenu ? '▼' : '▶'}</span>
+              </button>
 
                   {/* Collapsible Filters Menu */}
                   {showFiltersMenu && (
