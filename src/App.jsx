@@ -40,7 +40,10 @@ export default function App() {
   const [availabilities, setAvailabilities] = useState([]);
   const [audioFilter, setAudioFilter] = useState('all');
   const [platformFilter, setPlatformFilter] = useState('all');
-  const [typeFilters, setTypeFilters] = useState(['subscription', 'rent', 'buy', 'addon', 'free']); // Multi-select for streaming types
+  const [typeFilters, setTypeFilters] = useState(['subscription', 'rent', 'buy', 'addon', 'free']);
+  const [countryFilter, setCountryFilter] = useState('all'); // New: Country filter
+  const [expandedCountries, setExpandedCountries] = useState({}); // Track which countries are expanded
+  const [showFiltersMenu, setShowFiltersMenu] = useState(true); // Toggle filters visibility
   const [loading, setLoading] = useState(false);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [error, setError] = useState(null);
@@ -147,6 +150,9 @@ export default function App() {
     const streamingType = a.streaming_type || 'subscription';
     if (!typeFilters.includes(streamingType)) return false;
     
+    // Country filter (new)
+    if (countryFilter !== 'all' && a.country_code !== countryFilter) return false;
+    
     // Audio/Subtitle filter
     if (audioFilter === 'vf') return a.has_french_audio;
     if (audioFilter === 'vostfr') return a.has_french_subtitles;
@@ -154,6 +160,30 @@ export default function App() {
     // 'all' = show everything
     return true;
   });
+
+  // Group availabilities by country
+  const groupedByCountry = filteredAvailabilities.reduce((acc, avail) => {
+    const countryCode = avail.country_code;
+    if (!acc[countryCode]) {
+      acc[countryCode] = {
+        country_code: countryCode,
+        country_name: avail.country_name,
+        options: []
+      };
+    }
+    acc[countryCode].options.push(avail);
+    return acc;
+  }, {});
+
+  // Convert to array and sort by number of options (descending)
+  const countriesArray = Object.values(groupedByCountry).sort((a, b) => b.options.length - a.options.length);
+  
+  // Get unique countries for filter
+  const availableCountries = [...new Set(availabilities.map(a => ({
+    code: a.country_code,
+    name: a.country_name
+  })
+  .map(c => JSON.stringify(c))))].map(c => JSON.parse(c)).sort((a, b) => a.name.localeCompare(b.name));
 
   // Get unique platforms from availabilities
   const availablePlatforms = [...new Set(availabilities.map(a => a.platform))].sort();
@@ -165,13 +195,23 @@ export default function App() {
   const resetFilters = () => {
     setAudioFilter('all');
     setPlatformFilter('all');
+    setCountryFilter('all');
     setTypeFilters(['subscription', 'rent', 'buy', 'addon', 'free']);
   };
   
   // Check if any filters are active
   const hasActiveFilters = audioFilter !== 'all' || 
                           platformFilter !== 'all' || 
+                          countryFilter !== 'all' ||
                           typeFilters.length < 5;
+  
+  // Toggle country expansion
+  const toggleCountry = (countryCode) => {
+    setExpandedCountries(prev => ({
+      ...prev,
+      [countryCode]: !prev[countryCode]
+    }));
+  };
   
   // Toggle streaming type filter (multi-select)
   const toggleTypeFilter = (type) => {
@@ -225,28 +265,6 @@ export default function App() {
       return a.platform === platform;
     }).length;
   };
-
-  const groupByRegion = (availabilities) => {
-    const regions = {
-      'Europe': ['FR', 'BE', 'CH', 'LU', 'MC', 'DE', 'ES', 'IT', 'PT', 'NL', 'GB', 'SE', 'NO', 'DK', 'FI', 'PL', 'AT', 'CZ', 'GR', 'IE', 'HR', 'SI', 'SK', 'HU', 'RO', 'BG', 'LT', 'LV', 'EE', 'IS'],
-      'Amérique du Nord': ['CA', 'US', 'MX'],
-      'Amérique Latine': ['BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'UY', 'EC'],
-      'Afrique': ['MA', 'TN', 'DZ', 'SN', 'CI', 'MG', 'ZA', 'KE', 'NG', 'EG'],
-      'Asie': ['JP', 'KR', 'IN', 'TH', 'SG', 'MY', 'ID', 'PH', 'VN', 'HK', 'TW', 'IL', 'TR'],
-      'Océanie': ['AU', 'NZ']
-    };
-
-    const grouped = {};
-    availabilities.forEach(avail => {
-      const region = Object.keys(regions).find(r => regions[r].includes(avail.country_code)) || 'Autres';
-      if (!grouped[region]) grouped[region] = [];
-      grouped[region].push(avail);
-    });
-
-    return grouped;
-  };
-
-  const groupedAvailabilities = groupByRegion(filteredAvailabilities);
 
   return (
     <div className="min-h-screen bg-black">
@@ -508,142 +526,195 @@ export default function App() {
                     </div>
                   )}
 
-                  <div className="flex gap-3 flex-wrap">
-                    <button
-                      onClick={() => setAudioFilter('all')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
-                        audioFilter === 'all'
-                          ? 'bg-red-600 text-white shadow-lg scale-105'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      Tous les résultats ({getAudioCount('all')})
-                    </button>
-                    <button
-                      onClick={() => setAudioFilter('vf')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
-                        audioFilter === 'vf'
-                          ? 'bg-red-600 text-white shadow-lg scale-105'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      🎙️ VF uniquement ({getAudioCount('vf')})
-                    </button>
-                    <button
-                      onClick={() => setAudioFilter('vostfr')}
-                      className={`px-6 py-3 rounded-xl font-bold transition-all ${
-                        audioFilter === 'vostfr'
-                          ? 'bg-red-600 text-white shadow-lg scale-105'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      📝 VOSTFR ({getAudioCount('vostfr')})
-                    </button>
-                  </div>
+                  {/* Filters Toggle Button */}
+                  <button
+                    onClick={() => setShowFiltersMenu(!showFiltersMenu)}
+                    className="w-full mb-4 px-6 py-4 rounded-xl font-bold bg-gray-800 text-white hover:bg-gray-700 transition-all border-2 border-gray-600 flex items-center justify-between"
+                  >
+                    <span className="text-lg">🎚️ Filtres ({Object.keys({audioFilter, platformFilter, countryFilter, typeFilters}).length})</span>
+                    <span className="text-2xl">{showFiltersMenu ? '▼' : '▶'}</span>
+                  </button>
 
-                  {/* Platform Filters */}
-                  {availablePlatforms.length > 1 && (
-                    <div className="mt-4">
-                      <p className="text-gray-400 text-sm mb-2">Filtrer par plateforme:</p>
-                      <div className="flex gap-2 flex-wrap">
-                        <button
-                          onClick={() => setPlatformFilter('all')}
-                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                            platformFilter === 'all'
-                              ? 'bg-white text-red-600 shadow-lg'
-                              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                          }`}
-                        >
-                          Toutes
-                        </button>
-                        {availablePlatforms.map(platform => {
-                          const style = getPlatformStyle(platform);
-                          const count = getPlatformCount(platform);
-                          return (
+                  {/* Collapsible Filters Menu */}
+                  {showFiltersMenu && (
+                    <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 mb-6 border border-gray-700 space-y-6">
+                      
+                      {/* Audio Filters */}
+                      <div>
+                        <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                          <span className="w-1 h-6 bg-red-500 rounded"></span>
+                          🎙️ LANGUE
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                          <button
+                            onClick={() => setAudioFilter('all')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'all'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            Tous ({getAudioCount('all')})
+                          </button>
+                          <button
+                            onClick={() => setAudioFilter('vf')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'vf'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            🎙️ VF ({getAudioCount('vf')})
+                          </button>
+                          <button
+                            onClick={() => setAudioFilter('vostfr')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                              audioFilter === 'vostfr'
+                                ? 'bg-red-600 text-white shadow-lg scale-105'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            📝 VOSTFR ({getAudioCount('vostfr')})
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Platform Filters */}
+                      {availablePlatforms.length > 1 && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            📺 PLATEFORME
+                          </p>
+                          <div className="flex gap-2 flex-wrap">
                             <button
-                              key={platform}
-                              onClick={() => setPlatformFilter(platform)}
+                              onClick={() => setPlatformFilter('all')}
                               className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                                platformFilter === platform
-                                  ? `${style.bg} ${style.text} shadow-lg scale-105`
+                                platformFilter === 'all'
+                                  ? 'bg-white text-red-600 shadow-lg'
                                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                               }`}
                             >
-                              {style.icon} {platform} ({count})
+                              Toutes
                             </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                            {availablePlatforms.map(platform => {
+                              const style = getPlatformStyle(platform);
+                              const count = getPlatformCount(platform);
+                              return (
+                                <button
+                                  key={platform}
+                                  onClick={() => setPlatformFilter(platform)}
+                                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    platformFilter === platform
+                                      ? `${style.bg} ${style.text} shadow-lg scale-105`
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  {style.icon} {platform} ({count})
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Type Filters (Subscription / VOD) */}
-                  {(typeCount.rent > 0 || typeCount.buy > 0 || typeCount.addon > 0) && (
-                    <div className="mt-4">
-                      <p className="text-gray-400 text-sm mb-2">Type de disponibilité (sélection multiple):</p>
-                      <div className="flex gap-2 flex-wrap">
-                        {typeCount.subscription > 0 && (
-                          <button
-                            onClick={() => toggleTypeFilter('subscription')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              typeFilters.includes('subscription')
-                                ? 'bg-green-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
-                            }`}
+                      {/* Type Filters */}
+                      {(typeCount.rent > 0 || typeCount.buy > 0 || typeCount.addon > 0) && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            💳 TYPE DE DISPONIBILITÉ
+                          </p>
+                          <div className="flex gap-2 flex-wrap">
+                            {typeCount.subscription > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('subscription')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('subscription')
+                                    ? 'bg-green-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                📺 Streaming ({typeCount.subscription})
+                              </button>
+                            )}
+                            {typeCount.rent > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('rent')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('rent')
+                                    ? 'bg-yellow-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                🎬 Location ({typeCount.rent})
+                              </button>
+                            )}
+                            {typeCount.buy > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('buy')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('buy')
+                                    ? 'bg-purple-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                💰 Achat ({typeCount.buy})
+                              </button>
+                            )}
+                            {typeCount.addon > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('addon')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('addon')
+                                    ? 'bg-blue-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                📡 Chaîne payante ({typeCount.addon})
+                              </button>
+                            )}
+                            {typeCount.free > 0 && (
+                              <button
+                                onClick={() => toggleTypeFilter('free')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                  typeFilters.includes('free')
+                                    ? 'bg-cyan-600 text-white shadow-lg scale-105'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
+                                }`}
+                              >
+                                🆓 Gratuit ({typeCount.free})
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-gray-500 text-xs mt-2">💡 Sélection multiple possible</p>
+                        </div>
+                      )}
+
+                      {/* Country Filter */}
+                      {availableCountries.length > 1 && (
+                        <div>
+                          <p className="text-gray-300 text-sm font-bold mb-3 flex items-center gap-2">
+                            <span className="w-1 h-6 bg-red-500 rounded"></span>
+                            🌍 PAYS
+                          </p>
+                          <select
+                            value={countryFilter}
+                            onChange={(e) => setCountryFilter(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-red-500 focus:outline-none font-medium"
                           >
-                            📺 Streaming ({typeCount.subscription})
-                          </button>
-                        )}
-                        {typeCount.rent > 0 && (
-                          <button
-                            onClick={() => toggleTypeFilter('rent')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              typeFilters.includes('rent')
-                                ? 'bg-yellow-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
-                            }`}
-                          >
-                            🎬 Location ({typeCount.rent})
-                          </button>
-                        )}
-                        {typeCount.buy > 0 && (
-                          <button
-                            onClick={() => toggleTypeFilter('buy')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              typeFilters.includes('buy')
-                                ? 'bg-purple-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
-                            }`}
-                          >
-                            💰 Achat ({typeCount.buy})
-                          </button>
-                        )}
-                        {typeCount.addon > 0 && (
-                          <button
-                            onClick={() => toggleTypeFilter('addon')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              typeFilters.includes('addon')
-                                ? 'bg-blue-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
-                            }`}
-                          >
-                            📡 Chaîne payante ({typeCount.addon})
-                          </button>
-                        )}
-                        {typeCount.free > 0 && (
-                          <button
-                            onClick={() => toggleTypeFilter('free')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                              typeFilters.includes('free')
-                                ? 'bg-cyan-600 text-white shadow-lg scale-105'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 opacity-50'
-                            }`}
-                          >
-                            🆓 Gratuit ({typeCount.free})
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-gray-500 text-xs mt-2">💡 Cliquez sur plusieurs types pour combiner les résultats</p>
+                            <option value="all">Tous les pays ({availableCountries.length})</option>
+                            {availableCountries.map(country => {
+                              const count = availabilities.filter(a => a.country_code === country.code).length;
+                              return (
+                                <option key={country.code} value={country.code}>
+                                  {country.name} ({count})
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -726,108 +797,133 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Regions */}
-                {Object.keys(groupedAvailabilities).map(region => (
-                  <div key={region} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
-                    <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
-                      <span className="bg-red-600 w-2 h-8 rounded-full"></span>
-                      {region} ({groupedAvailabilities[region].length})
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {groupedAvailabilities[region].map((avail, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-5 border border-gray-700 hover:border-red-500 hover:bg-gray-800 transition-all hover:scale-105"
-                        >
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
+                {/* Countries - Grouped and Collapsible */}
+                <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+                  <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
+                    <span className="bg-red-600 w-2 h-8 rounded-full"></span>
+                    Pays ({countriesArray.length})
+                  </h4>
+                  <div className="space-y-3">
+                    {countriesArray.map((country) => {
+                      const isExpanded = expandedCountries[country.country_code];
+                      const optionsCount = country.options.length;
+                      
+                      return (
+                        <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
+                          {/* Country Header - Clickable */}
+                          <button
+                            onClick={() => toggleCountry(country.country_code)}
+                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800 transition-all"
+                          >
+                            <div className="flex items-center gap-4">
                               <img 
-                                src={`https://flagcdn.com/48x36/${avail.country_code.toLowerCase()}.png`}
-                                alt={`Drapeau ${avail.country_name}`}
+                                src={`https://flagcdn.com/48x36/${country.country_code.toLowerCase()}.png`}
+                                alt={`Drapeau ${country.country_name}`}
                                 className="w-12 h-9 rounded shadow-lg border border-gray-600"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   e.target.nextSibling.style.display = 'inline';
                                 }}
                               />
-                              <span style={{display: 'none'}} className="text-4xl">🌍</span>
-                              <span className="font-black text-white text-lg">
-                                {avail.country_name}
-                              </span>
-                            </div>
-                            <div className="flex flex-col gap-1 items-end">
-                              <span className={`text-xs ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
-                                {getPlatformStyle(avail.platform).icon} {avail.platform.toUpperCase()}
-                              </span>
-                              {avail.streaming_type && avail.streaming_type !== 'subscription' && (
-                                <span className={`text-xs px-2 py-1 rounded font-bold ${
-                                  avail.streaming_type === 'addon' ? 'bg-blue-600' :
-                                  avail.streaming_type === 'free' ? 'bg-cyan-600' :
-                                  'bg-yellow-600'
-                                } text-white`}>
-                                  {avail.streaming_type === 'rent' ? '🎬 LOCATION' : 
-                                   avail.streaming_type === 'buy' ? '💰 ACHAT' : 
-                                   avail.streaming_type === 'free' ? '🆓 GRATUIT' : 
-                                   avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
-                                   avail.streaming_type === 'addon' ? '📡 CHAÎNE PAYANTE' :
-                                   avail.streaming_type.toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-3 mb-4">
-                            <div className="flex items-center gap-3">
-                              {avail.has_french_audio ? (
-                                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                              )}
-                              <span className={`text-sm font-medium ${avail.has_french_audio ? 'text-green-400' : 'text-gray-500'}`}>
-                                Audio français (VF)
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                              {avail.has_french_subtitles ? (
-                                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                              ) : (
-                                <XCircle className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                              )}
-                              <span className={`text-sm font-medium ${avail.has_french_subtitles ? 'text-green-400' : 'text-gray-500'}`}>
-                                Sous-titres français
-                              </span>
-                            </div>
-
-                            {avail.quality && (
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
-                                  {avail.quality.toUpperCase()}
-                                </span>
+                              <span style={{display: 'none'}} className="text-3xl">🌍</span>
+                              <div className="text-left">
+                                <h5 className="font-black text-white text-xl">{country.country_name}</h5>
+                                <p className="text-gray-400 text-sm">
+                                  {optionsCount} option{optionsCount > 1 ? 's' : ''} disponible{optionsCount > 1 ? 's' : ''}
+                                </p>
                               </div>
-                            )}
-                          </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-red-500 font-black text-2xl">
+                                {isExpanded ? '▼' : '▶'}
+                              </span>
+                            </div>
+                          </button>
 
-                          {avail.streaming_url && (
-                            <a
-                              href={avail.streaming_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`block text-center ${getPlatformStyle(avail.platform).bg} hover:opacity-90 text-white py-3 rounded-xl text-sm font-black transition-all hover:scale-105 shadow-lg`}
-                            >
-                              {avail.streaming_type === 'rent' ? '🎬 Louer' :
-                               avail.streaming_type === 'buy' ? '💰 Acheter' :
-                               avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
-                               avail.streaming_type === 'addon' ? `📡 Chaîne sur ${avail.platform}` :
-                               avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
-                               `▶ Voir sur ${avail.platform}`}
-                            </a>
+                          {/* Expanded Options */}
+                          {isExpanded && (
+                            <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
+                              {country.options.map((avail, idx) => (
+                                <div
+                                  key={idx}
+                                  className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      <span className={`text-sm ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
+                                        {getPlatformStyle(avail.platform).icon} {avail.platform}
+                                      </span>
+                                    </div>
+                                    {avail.streaming_type && avail.streaming_type !== 'subscription' && (
+                                      <span className={`text-xs px-2 py-1 rounded font-bold ${
+                                        avail.streaming_type === 'addon' ? 'bg-blue-600' :
+                                        avail.streaming_type === 'free' ? 'bg-cyan-600' :
+                                        'bg-yellow-600'
+                                      } text-white`}>
+                                        {avail.streaming_type === 'rent' ? '🎬 LOCATION' : 
+                                         avail.streaming_type === 'buy' ? '💰 ACHAT' : 
+                                         avail.streaming_type === 'free' ? '🆓 GRATUIT' : 
+                                         avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
+                                         avail.streaming_type === 'addon' ? '📡 CHAÎNE PAYANTE' :
+                                         avail.streaming_type.toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-4 mb-3 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      {avail.has_french_audio ? (
+                                        <CheckCircle className="w-4 h-4 text-green-400" />
+                                      ) : (
+                                        <XCircle className="w-4 h-4 text-gray-600" />
+                                      )}
+                                      <span className={avail.has_french_audio ? 'text-green-400 font-medium' : 'text-gray-500'}>
+                                        VF
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      {avail.has_french_subtitles ? (
+                                        <CheckCircle className="w-4 h-4 text-green-400" />
+                                      ) : (
+                                        <XCircle className="w-4 h-4 text-gray-600" />
+                                      )}
+                                      <span className={avail.has_french_subtitles ? 'text-green-400 font-medium' : 'text-gray-500'}>
+                                        VOSTFR
+                                      </span>
+                                    </div>
+
+                                    {avail.quality && (
+                                      <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
+                                        {avail.quality.toUpperCase()}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {avail.streaming_url && (
+                                    <a
+                                      href={avail.streaming_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`block text-center ${getPlatformStyle(avail.platform).bg} hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
+                                    >
+                                      {avail.streaming_type === 'rent' ? '🎬 Louer' :
+                                       avail.streaming_type === 'buy' ? '💰 Acheter' :
+                                       avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
+                                       avail.streaming_type === 'addon' ? `📡 Chaîne sur ${avail.platform}` :
+                                       avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
+                                       `▶ Voir sur ${avail.platform}`}
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
 
                 {/* VPN CTA */}
                 <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
