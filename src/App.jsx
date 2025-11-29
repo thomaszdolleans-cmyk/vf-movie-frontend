@@ -704,6 +704,7 @@ export default function App() {
                                   {avail.streaming_type === 'rent' ? '🎬 LOCATION' : 
                                    avail.streaming_type === 'buy' ? '💰 ACHAT' : 
                                    avail.streaming_type === 'free' ? '🆓 GRATUIT' : 
+                                   avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
                                    avail.streaming_type === 'addon' ? '📡 CHAÎNE PAYANTE' :
                                    avail.streaming_type.toUpperCase()}
                                 </span>
@@ -752,7 +753,8 @@ export default function App() {
                             >
                               {avail.streaming_type === 'rent' ? '🎬 Louer' :
                                avail.streaming_type === 'buy' ? '💰 Acheter' :
-                               avail.streaming_type === 'addon' ? `📡 Voir sur ${avail.platform}` :
+                               avail.streaming_type === 'addon' && avail.addon_name ? `📡 ${avail.addon_name}` :
+                               avail.streaming_type === 'addon' ? `📡 Chaîne sur ${avail.platform}` :
                                avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
                                `▶ Voir sur ${avail.platform}`}
                             </a>
