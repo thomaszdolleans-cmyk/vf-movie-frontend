@@ -494,7 +494,7 @@ export default function App() {
       </header>
 
       {/* iOS Install Instructions */}
-      {isIOS && showIOSPrompt && !window.navigator.standalone && (
+      {typeof window!=='undefined' && isIOS && showIOSPrompt && !window.navigator.standalone && (
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-2 md:border-b-4 border-blue-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
             <div className="flex items-start justify-between flex-wrap gap-2 md:gap-4">
