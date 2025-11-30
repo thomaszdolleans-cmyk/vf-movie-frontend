@@ -858,8 +858,8 @@ export default function App() {
                                 >
                                   {style.icon} {platform} ({count})
                                 </button>
-                              )
-                            })
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -957,7 +957,7 @@ export default function App() {
                                   {country.name} ({count})
                                 </option>
                               );
-                            })
+                            })}
                           </select>
                         </div>
                       )}
@@ -1088,9 +1088,13 @@ export default function App() {
                             </button>
 
                             {/* Expanded Options */}
+                            {/* Expanded Options */}
                             {isExpanded && (
                               <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
-                                {(selectedMovie?.media_type === 'tv' ? groupSeasons(country.options) : country.options).map((avail, idx) => (
+                                {(selectedMovie?.media_type === 'tv'
+                                  ? groupSeasons(country.options)
+                                  : country.options
+                                ).map((avail, idx) => (
                                   <div
                                     key={idx}
                                     className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
@@ -1112,14 +1116,14 @@ export default function App() {
                                             {getPlatformStyle(avail.platform).icon} {avail.platform}
                                           </span>
                                         )}
-                                        
+
                                         {/* Show "INCLUS" badge for Prime subscription to clarify it's included */}
                                         {avail.platform === 'Amazon Prime' && avail.streaming_type === 'subscription' && (
                                           <span className="text-xs px-2 py-1 rounded bg-green-600 text-white font-bold">
                                             ✓ INCLUS
                                           </span>
                                         )}
-                                        
+
                                         {/* Show season information for TV series */}
                                         {selectedMovie?.media_type === 'tv' && avail.seasonsText && (
                                           <span className="text-xs px-2 py-1 rounded bg-purple-600 text-white font-bold">
@@ -1127,7 +1131,7 @@ export default function App() {
                                           </span>
                                         )}
                                       </div>
-                                      
+
                                       {/* Type badges */}
                                       <div className="flex flex-col gap-1 items-end">
                                         {avail.streaming_type === 'addon' && (
@@ -1183,34 +1187,32 @@ export default function App() {
                                       )}
                                     </div>
 
-                                   {avail.streaming_url && (
-  <a
-    href={avail.streaming_url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`block text-center ${
-      avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
-    } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
-  >
-    {avail.streaming_type === 'rent' ? '🎬 Louer' :
-     avail.streaming_type === 'buy' ? '💰 Acheter' :
-     avail.streaming_type === 'addon' && avail.addon_name ? `💳 S'abonner à ${avail.addon_name}` :
-     avail.streaming_type === 'addon' ? `📡 Chaîne payante` :
-     avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
-     `▶ Voir sur ${avail.platform}`
-    }
-  </a>
-)}
+                                    {avail.streaming_url && (
+                                      <a
+                                        href={avail.streaming_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`block text-center ${
+                                          avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
+                                        } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
+                                      >
+                                        {avail.streaming_type === 'rent'
+                                          ? '🎬 Louer'
+                                          : avail.streaming_type === 'buy'
+                                          ? '💰 Acheter'
+                                          : avail.streaming_type === 'addon' && avail.addon_name
+                                          ? `💳 S'abonner à ${avail.addon_name}`
+                                          : avail.streaming_type === 'addon'
+                                          ? `📡 Chaîne payante`
+                                          : avail.streaming_type === 'free'
+                                          ? `🆓 Voir sur ${avail.platform}`
+                                          : `▶ Voir sur ${avail.platform}`}
+                                      </a>
+                                    )}
                                   </div>
                                 ))}
                               </div>
                             )}
-                          </div>
-                        );
-                      })
-                    </div>
-                  </div>
-                )}
 
                 {/* VPN CTA */}
                 <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
