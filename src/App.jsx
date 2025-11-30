@@ -62,6 +62,8 @@ export default function App() {
   const [loadingDiscover, setLoadingDiscover] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // Get share URL and text
   const getShareData = () => {
@@ -681,10 +683,10 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {/* Disclaimer */}
-        <div className="mb-4 md:mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg md:rounded-xl p-2 md:p-4 flex items-start gap-2 md:gap-3">
-          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-          <div className="text-xs md:text-sm text-yellow-200">
-            <strong className="hidden md:inline">Avertissement : </strong>Les informations de disponibilité sont fournies à titre indicatif<span className="hidden md:inline"> et peuvent varier selon les régions et les mises à jour des plateformes</span>. Veuillez vérifier directement sur la plateforme concernée.
+        <div className="mb-4 md:mb-6 bg-gray-800/50 border border-gray-700 rounded-lg md:rounded-xl p-2 md:p-4 flex items-start gap-2 md:gap-3">
+          <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+          <div className="text-xs md:text-sm text-gray-400">
+            <strong className="hidden md:inline">Information : </strong>Ce site est un service d'information indépendant. Les données de disponibilité proviennent de sources tierces et sont fournies à titre indicatif uniquement<span className="hidden md:inline">. Nous ne sommes affiliés à aucune plateforme de streaming</span>. <button onClick={() => setShowLegalModal(true)} className="text-red-400 hover:text-red-300 underline">Mentions légales</button>
           </div>
         </div>
 
@@ -778,8 +780,8 @@ export default function App() {
                       <Shield className="w-8 h-8 text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-white font-bold text-lg">🔓 Débloquez tous les catalogues</p>
-                      <p className="text-purple-200 text-sm hidden md:block">Accédez aux contenus de n'importe quel pays avec un VPN</p>
+                      <p className="text-white font-bold text-lg">🔐 Protégez votre vie privée</p>
+                      <p className="text-purple-200 text-sm hidden md:block">Naviguez en toute sécurité avec un VPN de confiance</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -1056,7 +1058,7 @@ export default function App() {
                 </div>
 
                 <p className="text-center text-purple-300 text-xs md:text-sm">
-                  💡 Un VPN vous permet de changer virtuellement de pays et d'accéder à tous les catalogues
+                  💡 Un VPN protège votre vie privée en ligne et sécurise votre connexion
                 </p>
               </div>
             </div>
@@ -1601,10 +1603,10 @@ export default function App() {
                       <Shield className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
-                      🔐 Débloquez ce contenu
+                      🔐 Protégez votre connexion
                     </h3>
                     <p className="text-purple-200 text-lg mb-8 max-w-2xl mx-auto">
-                      Changez virtuellement de pays pour accéder à n'importe quel catalogue
+                      Naviguez en toute sécurité et confidentialité avec un VPN
                     </p>
                     
                     {/* VPN Buttons */}
@@ -1657,16 +1659,282 @@ export default function App() {
       {/* Footer */}
       <footer className="mt-20 border-t border-gray-800 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center space-y-3">
-            <p className="text-gray-400 text-sm">
-              Données fournies par TMDb et Streaming Availability
+          {/* TMDB Attribution - Required */}
+          <div className="flex flex-col items-center justify-center gap-4 mb-6 pb-6 border-b border-gray-800">
+            <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+              <img 
+                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" 
+                alt="TMDB Logo" 
+                className="h-6 md:h-8"
+              />
+            </a>
+            <p className="text-gray-500 text-xs text-center max-w-lg">
+              Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.
+              Les informations sur les films et séries sont fournies par <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">The Movie Database (TMDB)</a>.
             </p>
+          </div>
+
+          {/* Main Footer Content */}
+          <div className="text-center space-y-4">
             <p className="text-gray-500 text-sm">
               <img src="https://flagcdn.com/24x18/fr.png" alt="France" className="inline w-6 h-4 mr-1" /> Fait avec ❤️ pour les francophones du monde entier
+            </p>
+            
+            {/* Legal Links */}
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <button 
+                onClick={() => setShowLegalModal(true)}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                Mentions légales
+              </button>
+              <span className="text-gray-700">•</span>
+              <button 
+                onClick={() => setShowPrivacyModal(true)}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                Politique de confidentialité
+              </button>
+            </div>
+
+            {/* Copyright */}
+            <p className="text-gray-600 text-xs">
+              © {new Date().getFullYear()} VF Movie Finder. Tous droits réservés. 
+              <br className="md:hidden" />
+              <span className="hidden md:inline"> • </span>
+              Service d'information indépendant, non affilié aux plateformes de streaming.
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Legal Modal - Mentions Légales */}
+      {showLegalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+            <div className="sticky top-0 bg-gray-900 p-4 md:p-6 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl md:text-2xl font-bold text-white">📜 Mentions Légales</h2>
+              <button 
+                onClick={() => setShowLegalModal(false)}
+                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 md:p-6 space-y-6 text-gray-300">
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">1. Éditeur du site</h3>
+                <p className="text-sm">
+                  VF Movie Finder est un service d'information indépendant permettant aux utilisateurs de rechercher 
+                  la disponibilité de films et séries sur les plateformes de streaming légales.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">2. Nature du service</h3>
+                <p className="text-sm">
+                  Ce site est un <strong>moteur de recherche et agrégateur d'informations</strong>. Il ne propose aucun 
+                  contenu en streaming, téléchargement ou hébergement de fichiers vidéo. Toutes les redirections 
+                  mènent vers des plateformes de streaming officielles et légales.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">3. Sources des données</h3>
+                <p className="text-sm mb-2">Les informations affichées proviennent de :</p>
+                <ul className="text-sm list-disc list-inside space-y-1 ml-2">
+                  <li><strong>The Movie Database (TMDB)</strong> - Métadonnées des films et séries (titres, affiches, synopsis)</li>
+                  <li><strong>Streaming Availability API</strong> - Informations de disponibilité sur les plateformes</li>
+                </ul>
+                <p className="text-sm mt-2">
+                  Ces données sont fournies à titre indicatif et peuvent ne pas refléter la disponibilité en temps réel. 
+                  Nous vous recommandons de vérifier directement sur la plateforme concernée.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">4. Non-affiliation</h3>
+                <p className="text-sm">
+                  VF Movie Finder n'est <strong>affilié, sponsorisé ou approuvé</strong> par aucune des plateformes de streaming 
+                  mentionnées (Netflix, Disney+, Amazon Prime Video, Apple TV+, etc.). Les noms et logos sont la propriété 
+                  de leurs détenteurs respectifs et sont utilisés à des fins d'identification uniquement.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">5. Attribution TMDB</h3>
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <img 
+                    src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" 
+                    alt="TMDB Logo" 
+                    className="h-8 mb-3"
+                  />
+                  <p className="text-sm">
+                    Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB. Toutes les informations 
+                    relatives aux films, séries, acteurs et images sont fournies par The Movie Database.
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">6. Services VPN</h3>
+                <p className="text-sm">
+                  Les services VPN présentés sur ce site sont mentionnés à titre informatif pour permettre aux utilisateurs 
+                  de protéger leur vie privée en ligne. L'utilisation d'un VPN est légale dans la plupart des pays. 
+                  Nous rappelons aux utilisateurs de respecter les conditions d'utilisation des plateformes de streaming 
+                  qu'ils utilisent.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">7. Limitation de responsabilité</h3>
+                <p className="text-sm">
+                  VF Movie Finder ne garantit pas l'exactitude, l'exhaustivité ou l'actualité des informations présentées. 
+                  L'utilisation du site se fait sous l'entière responsabilité de l'utilisateur. Nous ne sommes pas 
+                  responsables des contenus des sites tiers vers lesquels nous redirigeons.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">8. Propriété intellectuelle</h3>
+                <p className="text-sm">
+                  Les affiches, images et métadonnées des films et séries sont la propriété de leurs ayants droit respectifs. 
+                  Elles sont affichées via l'API TMDB conformément à leurs conditions d'utilisation.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">9. Contact</h3>
+                <p className="text-sm">
+                  Pour toute question concernant ce site, vous pouvez nous contacter via les réseaux sociaux 
+                  accessibles depuis le bouton de partage.
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Modal - Politique de confidentialité */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+            <div className="sticky top-0 bg-gray-900 p-4 md:p-6 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="text-xl md:text-2xl font-bold text-white">🔒 Politique de Confidentialité</h2>
+              <button 
+                onClick={() => setShowPrivacyModal(false)}
+                className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 md:p-6 space-y-6 text-gray-300">
+              <p className="text-sm text-gray-400">
+                Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">1. Introduction</h3>
+                <p className="text-sm">
+                  VF Movie Finder s'engage à protéger la vie privée de ses utilisateurs. Cette politique de 
+                  confidentialité explique quelles informations nous collectons et comment nous les utilisons.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">2. Données collectées</h3>
+                <p className="text-sm mb-2">Notre site collecte un minimum de données :</p>
+                <ul className="text-sm list-disc list-inside space-y-1 ml-2">
+                  <li><strong>Données de navigation</strong> - Pages visitées, recherches effectuées (non nominatives)</li>
+                  <li><strong>Données techniques</strong> - Type de navigateur, appareil utilisé (anonymisées)</li>
+                  <li><strong>Préférences</strong> - Filtres de recherche sélectionnés (stockés localement)</li>
+                </ul>
+                <p className="text-sm mt-2 text-green-400">
+                  ✓ Nous ne collectons PAS : nom, email, adresse, données de paiement ou toute information personnelle identifiable.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">3. Cookies et stockage local</h3>
+                <p className="text-sm">
+                  Nous utilisons le stockage local (localStorage) de votre navigateur pour sauvegarder vos préférences 
+                  (comme le prompt d'installation PWA). Aucun cookie de traçage publicitaire n'est utilisé sur ce site.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">4. Services tiers</h3>
+                <p className="text-sm mb-2">Notre site interagit avec les services tiers suivants :</p>
+                <ul className="text-sm list-disc list-inside space-y-1 ml-2">
+                  <li><strong>TMDB API</strong> - Pour récupérer les informations sur les films/séries</li>
+                  <li><strong>Streaming Availability API</strong> - Pour les données de disponibilité</li>
+                  <li><strong>Clearbit</strong> - Pour les logos des partenaires VPN</li>
+                  <li><strong>Flagcdn</strong> - Pour les drapeaux des pays</li>
+                </ul>
+                <p className="text-sm mt-2">
+                  Ces services peuvent avoir leurs propres politiques de confidentialité.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">5. Liens affiliés</h3>
+                <p className="text-sm">
+                  Notre site contient des liens affiliés vers des services VPN. Lorsque vous cliquez sur ces liens 
+                  et effectuez un achat, nous pouvons recevoir une commission. Cela n'affecte pas le prix que vous payez 
+                  et nous aide à maintenir ce service gratuit.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">6. Liens externes</h3>
+                <p className="text-sm">
+                  Notre site contient des liens vers des plateformes de streaming et d'autres sites externes. 
+                  Nous ne sommes pas responsables des pratiques de confidentialité de ces sites tiers. 
+                  Nous vous encourageons à lire leurs politiques de confidentialité.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">7. Sécurité</h3>
+                <p className="text-sm">
+                  Notre site est servi via HTTPS pour assurer la sécurité de votre connexion. 
+                  Nous ne stockons aucune donnée sensible sur nos serveurs.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">8. Vos droits</h3>
+                <p className="text-sm">
+                  Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression 
+                  de vos données. Étant donné que nous ne collectons pas de données personnelles identifiables, 
+                  ces droits s'appliquent principalement aux données stockées localement dans votre navigateur, 
+                  que vous pouvez supprimer à tout moment en effaçant les données de navigation.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">9. Modifications</h3>
+                <p className="text-sm">
+                  Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment. 
+                  Les modifications seront effectives dès leur publication sur cette page.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-lg font-bold text-white mb-2">10. Contact</h3>
+                <p className="text-sm">
+                  Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter 
+                  via les réseaux sociaux accessibles depuis le bouton de partage du site.
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Share Widget */}
       <div className="fixed right-4 bottom-4 md:right-6 md:bottom-6 z-50">
