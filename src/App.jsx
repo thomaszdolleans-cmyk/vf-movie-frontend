@@ -243,45 +243,45 @@ export default function App() {
   // Group countries by geographic region
   const regionMapping = {
     // Europe
-    'FR': '🇪🇺 Europe', 'DE': '🇪🇺 Europe', 'GB': '🇪🇺 Europe', 'IT': '🇪🇺 Europe', 'ES': '🇪🇺 Europe',
-    'PT': '🇪🇺 Europe', 'NL': '🇪🇺 Europe', 'BE': '🇪🇺 Europe', 'CH': '🇪🇺 Europe', 'AT': '🇪🇺 Europe',
-    'IE': '🇪🇺 Europe', 'SE': '🇪🇺 Europe', 'NO': '🇪🇺 Europe', 'DK': '🇪🇺 Europe', 'FI': '🇪🇺 Europe',
-    'PL': '🇪🇺 Europe', 'CZ': '🇪🇺 Europe', 'HU': '🇪🇺 Europe', 'RO': '🇪🇺 Europe', 'GR': '🇪🇺 Europe',
-    'HR': '🇪🇺 Europe', 'SK': '🇪🇺 Europe', 'SI': '🇪🇺 Europe', 'BG': '🇪🇺 Europe', 'LT': '🇪🇺 Europe',
-    'LV': '🇪🇺 Europe', 'EE': '🇪🇺 Europe', 'IS': '🇪🇺 Europe', 'LU': '🇪🇺 Europe', 'MT': '🇪🇺 Europe',
-    'CY': '🇪🇺 Europe', 'RS': '🇪🇺 Europe', 'UA': '🇪🇺 Europe', 'BA': '🇪🇺 Europe', 'ME': '🇪🇺 Europe',
-    'MK': '🇪🇺 Europe', 'AL': '🇪🇺 Europe', 'MD': '🇪🇺 Europe', 'BY': '🇪🇺 Europe', 'RU': '🇪🇺 Europe',
-    'TR': '🇪🇺 Europe',
+    'FR': 'Europe', 'DE': 'Europe', 'GB': 'Europe', 'IT': 'Europe', 'ES': 'Europe',
+    'PT': 'Europe', 'NL': 'Europe', 'BE': 'Europe', 'CH': 'Europe', 'AT': 'Europe',
+    'IE': 'Europe', 'SE': 'Europe', 'NO': 'Europe', 'DK': 'Europe', 'FI': 'Europe',
+    'PL': 'Europe', 'CZ': 'Europe', 'HU': 'Europe', 'RO': 'Europe', 'GR': 'Europe',
+    'HR': 'Europe', 'SK': 'Europe', 'SI': 'Europe', 'BG': 'Europe', 'LT': 'Europe',
+    'LV': 'Europe', 'EE': 'Europe', 'IS': 'Europe', 'LU': 'Europe', 'MT': 'Europe',
+    'CY': 'Europe', 'RS': 'Europe', 'UA': 'Europe', 'BA': 'Europe', 'ME': 'Europe',
+    'MK': 'Europe', 'AL': 'Europe', 'MD': 'Europe', 'BY': 'Europe', 'RU': 'Europe',
+    'TR': 'Europe',
     
     // Americas
-    'US': '🌎 Amériques', 'CA': '🌎 Amériques', 'MX': '🌎 Amériques', 'BR': '🌎 Amériques', 'AR': '🌎 Amériques',
-    'CL': '🌎 Amériques', 'CO': '🌎 Amériques', 'PE': '🌎 Amériques', 'VE': '🌎 Amériques', 'EC': '🌎 Amériques',
-    'UY': '🌎 Amériques', 'PY': '🌎 Amériques', 'BO': '🌎 Amériques', 'CR': '🌎 Amériques', 'PA': '🌎 Amériques',
-    'GT': '🌎 Amériques', 'HN': '🌎 Amériques', 'NI': '🌎 Amériques', 'SV': '🌎 Amériques', 'DO': '🌎 Amériques',
-    'CU': '🌎 Amériques', 'JM': '🌎 Amériques', 'TT': '🌎 Amériques', 'BB': '🌎 Amériques', 'BS': '🌎 Amériques',
-    'BZ': '🌎 Amériques', 'GY': '🌎 Amériques', 'SR': '🌎 Amériques', 'GF': '🌎 Amériques', 'HT': '🌎 Amériques',
+    'US': 'Amériques', 'CA': 'Amériques', 'MX': 'Amériques', 'BR': 'Amériques', 'AR': 'Amériques',
+    'CL': 'Amériques', 'CO': 'Amériques', 'PE': 'Amériques', 'VE': 'Amériques', 'EC': 'Amériques',
+    'UY': 'Amériques', 'PY': 'Amériques', 'BO': 'Amériques', 'CR': 'Amériques', 'PA': 'Amériques',
+    'GT': 'Amériques', 'HN': 'Amériques', 'NI': 'Amériques', 'SV': 'Amériques', 'DO': 'Amériques',
+    'CU': 'Amériques', 'JM': 'Amériques', 'TT': 'Amériques', 'BB': 'Amériques', 'BS': 'Amériques',
+    'BZ': 'Amériques', 'GY': 'Amériques', 'SR': 'Amériques', 'GF': 'Amériques', 'HT': 'Amériques',
     
     // Asia-Pacific
-    'JP': '🌏 Asie-Pacifique', 'KR': '🌏 Asie-Pacifique', 'CN': '🌏 Asie-Pacifique', 'IN': '🌏 Asie-Pacifique',
-    'TH': '🌏 Asie-Pacifique', 'VN': '🌏 Asie-Pacifique', 'PH': '🌏 Asie-Pacifique', 'ID': '🌏 Asie-Pacifique',
-    'MY': '🌏 Asie-Pacifique', 'SG': '🌏 Asie-Pacifique', 'TW': '🌏 Asie-Pacifique', 'HK': '🌏 Asie-Pacifique',
-    'AU': '🌏 Asie-Pacifique', 'NZ': '🌏 Asie-Pacifique', 'PK': '🌏 Asie-Pacifique', 'BD': '🌏 Asie-Pacifique',
-    'LK': '🌏 Asie-Pacifique', 'MM': '🌏 Asie-Pacifique', 'KH': '🌏 Asie-Pacifique', 'LA': '🌏 Asie-Pacifique',
-    'MN': '🌏 Asie-Pacifique', 'NP': '🌏 Asie-Pacifique', 'BT': '🌏 Asie-Pacifique', 'MV': '🌏 Asie-Pacifique',
+    'JP': 'Asie-Pacifique', 'KR': 'Asie-Pacifique', 'CN': 'Asie-Pacifique', 'IN': 'Asie-Pacifique',
+    'TH': 'Asie-Pacifique', 'VN': 'Asie-Pacifique', 'PH': 'Asie-Pacifique', 'ID': 'Asie-Pacifique',
+    'MY': 'Asie-Pacifique', 'SG': 'Asie-Pacifique', 'TW': 'Asie-Pacifique', 'HK': 'Asie-Pacifique',
+    'AU': 'Asie-Pacifique', 'NZ': 'Asie-Pacifique', 'PK': 'Asie-Pacifique', 'BD': 'Asie-Pacifique',
+    'LK': 'Asie-Pacifique', 'MM': 'Asie-Pacifique', 'KH': 'Asie-Pacifique', 'LA': 'Asie-Pacifique',
+    'MN': 'Asie-Pacifique', 'NP': 'Asie-Pacifique', 'BT': 'Asie-Pacifique', 'MV': 'Asie-Pacifique',
     
     // Middle East & Africa
-    'ZA': '🌍 Afrique & Moyen-Orient', 'EG': '🌍 Afrique & Moyen-Orient', 'NG': '🌍 Afrique & Moyen-Orient',
-    'KE': '🌍 Afrique & Moyen-Orient', 'MA': '🌍 Afrique & Moyen-Orient', 'TN': '🌍 Afrique & Moyen-Orient',
-    'DZ': '🌍 Afrique & Moyen-Orient', 'GH': '🌍 Afrique & Moyen-Orient', 'SN': '🌍 Afrique & Moyen-Orient',
-    'CI': '🌍 Afrique & Moyen-Orient', 'SA': '🌍 Afrique & Moyen-Orient', 'AE': '🌍 Afrique & Moyen-Orient',
-    'IL': '🌍 Afrique & Moyen-Orient', 'QA': '🌍 Afrique & Moyen-Orient', 'KW': '🌍 Afrique & Moyen-Orient',
-    'BH': '🌍 Afrique & Moyen-Orient', 'OM': '🌍 Afrique & Moyen-Orient', 'JO': '🌍 Afrique & Moyen-Orient',
-    'LB': '🌍 Afrique & Moyen-Orient', 'IQ': '🌍 Afrique & Moyen-Orient', 'YE': '🌍 Afrique & Moyen-Orient',
-    'ET': '🌍 Afrique & Moyen-Orient', 'UG': '🌍 Afrique & Moyen-Orient', 'TZ': '🌍 Afrique & Moyen-Orient'
+    'ZA': 'Afrique & Moyen-Orient', 'EG': 'Afrique & Moyen-Orient', 'NG': 'Afrique & Moyen-Orient',
+    'KE': 'Afrique & Moyen-Orient', 'MA': 'Afrique & Moyen-Orient', 'TN': 'Afrique & Moyen-Orient',
+    'DZ': 'Afrique & Moyen-Orient', 'GH': 'Afrique & Moyen-Orient', 'SN': 'Afrique & Moyen-Orient',
+    'CI': 'Afrique & Moyen-Orient', 'SA': 'Afrique & Moyen-Orient', 'AE': 'Afrique & Moyen-Orient',
+    'IL': 'Afrique & Moyen-Orient', 'QA': 'Afrique & Moyen-Orient', 'KW': 'Afrique & Moyen-Orient',
+    'BH': 'Afrique & Moyen-Orient', 'OM': 'Afrique & Moyen-Orient', 'JO': 'Afrique & Moyen-Orient',
+    'LB': 'Afrique & Moyen-Orient', 'IQ': 'Afrique & Moyen-Orient', 'YE': 'Afrique & Moyen-Orient',
+    'ET': 'Afrique & Moyen-Orient', 'UG': 'Afrique & Moyen-Orient', 'TZ': 'Afrique & Moyen-Orient'
   };
   
   const countriesByRegion = countriesArray.reduce((acc, country) => {
-    const region = regionMapping[country.country_code] || '🌍 Autres régions';
+    const region = regionMapping[country.country_code] || 'Autres régions';
     if (!acc[region]) {
       acc[region] = [];
     }
@@ -290,7 +290,7 @@ export default function App() {
   }, {});
   
   // Sort regions: Europe first, then Americas, then Asia-Pacific, then Middle East & Africa, then Others
-  const regionOrder = ['🇪🇺 Europe', '🌎 Amériques', '🌏 Asie-Pacifique', '🌍 Afrique & Moyen-Orient', '🌍 Autres régions'];
+  const regionOrder = ['Europe', 'Amériques', 'Asie-Pacifique', 'Afrique & Moyen-Orient', 'Autres régions'];
   const sortedRegions = regionOrder.filter(region => countriesByRegion[region]);
   
   // Get unique countries for filter
@@ -486,7 +486,7 @@ export default function App() {
                 </div>
               </div>
               <p className="text-red-100 text-xs md:text-base lg:text-lg font-semibold">
-                🌍 Films en français · Partout dans le monde
+                🌍 Films & Séries en français · Partout dans le monde
               </p>
             </div>
           </div>
@@ -567,7 +567,7 @@ export default function App() {
         <div className="mb-4 md:mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-lg md:rounded-xl p-2 md:p-4 flex items-start gap-2 md:gap-3">
           <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
           <div className="text-xs md:text-sm text-yellow-200">
-            <strong className="hidden md:inline">Info importante : </strong>Les données proviennent d'une base tierce<span className="hidden md:inline"> mise à jour quotidiennement. Certaines informations peuvent être incomplètes ou obsolètes</span>. Vérifiez sur Netflix.
+            <strong className="hidden md:inline">Avertissement : </strong>Les informations de disponibilité sont fournies à titre indicatif<span className="hidden md:inline"> et peuvent varier selon les régions et les mises à jour des plateformes</span>. Veuillez vérifier directement sur la plateforme concernée.
           </div>
         </div>
 
@@ -659,7 +659,7 @@ export default function App() {
                 Besoin d'un VPN ?
               </h3>
               <p className="text-white/90 text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
-                Accédez aux catalogues Netflix du monde entier en toute sécurité
+                Accédez aux catalogues de streaming du monde entier en toute sécurité
               </p>
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
                 <a
@@ -969,7 +969,7 @@ export default function App() {
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
                 <Loader className="w-16 h-16 text-red-500 mx-auto mb-6 animate-spin" />
                 <p className="text-white text-2xl font-bold mb-2">Recherche en cours...</p>
-                <p className="text-gray-400 text-lg">Analyse des catalogues Netflix dans le monde entier</p>
+                <p className="text-gray-400 text-lg">Analyse des catalogues de streaming dans le monde entier</p>
               </div>
             )}
 
@@ -1217,10 +1217,10 @@ export default function App() {
                 <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
                   <Shield className="w-16 h-16 text-white mx-auto mb-4" />
                   <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
-                    Débloquez ce film avec un VPN
+                    Débloquez ce contenu avec un VPN
                   </h3>
                   <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                    Changez virtuellement de pays pour accéder à n'importe quel catalogue streaming
+                    Changez virtuellement de pays pour accéder à n'importe quel catalogue de streaming
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
@@ -1257,7 +1257,7 @@ export default function App() {
               Données fournies par TMDb et Streaming Availability
             </p>
             <p className="text-gray-500 text-sm">
-              🇫🇷 Fait avec ❤️ pour les francophones du monde entier
+              <img src="https://flagcdn.com/24x18/fr.png" alt="France" className="inline w-6 h-4 mr-1" /> Fait avec ❤️ pour les francophones du monde entier
             </p>
           </div>
         </div>
