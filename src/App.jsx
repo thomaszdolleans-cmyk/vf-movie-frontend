@@ -1011,10 +1011,10 @@ export default function App() {
                       <CheckCircle className="w-10 h-10 text-white" />
                       <div className="text-left">
                         <h3 className="text-4xl font-black text-white">
-                          {[...new Set(availabilities.filter(a => a.has_french_audio || a.has_french_subtitles).map(a => a.country_code))].length} pays
+                          {[...new Set(availabilities.filter(a => a && (a.has_french_audio || a.has_french_subtitles)).map(a => a.country_code))].length} pays
                         </h3>
                         <p className="text-green-100 text-lg font-medium">
-                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
@@ -1031,7 +1031,7 @@ export default function App() {
                           {[...new Set(filteredAvailabilities.map(a => a.country_code))].length} pays
                         </h3>
                         <p className="text-blue-100 text-lg font-medium">
-                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? 's' : ''}
+                          sur {availablePlatforms.length} plateforme{availablePlatforms.length > 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
@@ -1045,174 +1045,189 @@ export default function App() {
                 {countriesArray && countriesArray.length > 0 && (
                   <div className="space-y-6">
                     {sortedRegions.map(region => (
-                      <div key={region} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+                      <div
+                        key={region}
+                        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl"
+                      >
                         <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
                           <span className="bg-red-600 w-2 h-8 rounded-full"></span>
                           {region} ({countriesByRegion[region].length})
                         </h4>
                         <div className="space-y-3">
-                          {countriesByRegion[region].map((country) => {
+                          {countriesByRegion[region].map(country => {
                             const isExpanded = expandedCountries[country.country_code];
                             const optionsCount = country.options.length;
-                        
-                        return (
-                          <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
-                            {/* Country Header - Clickable */}
-                            <button
-                              onClick={() => toggleCountry(country.country_code)}
-                              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800 transition-all"
-                            >
-                              <div className="flex items-center gap-4">
-                                <img 
-                                  src={`https://flagcdn.com/48x36/${country.country_code.toLowerCase()}.png`}
-                                  alt={`Drapeau ${country.country_name}`}
-                                  className="w-12 h-9 rounded shadow-lg border border-gray-600"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'inline';
-                                  }}
-                                />
-                                <span style={{display: 'none'}} className="text-3xl">🌍</span>
-                                <div className="text-left">
-                                  <h5 className="font-black text-white text-xl">{country.country_name}</h5>
-                                  <p className="text-gray-400 text-sm">
-                                    {optionsCount} option{optionsCount > 1 ? 's' : ''} disponible{optionsCount > 1 ? 's' : ''}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-red-500 font-black text-2xl">
-                                  {isExpanded ? '▼' : '▶'}
-                                </span>
-                              </div>
-                            </button>
 
-                            {/* Expanded Options */}
-                            {/* Expanded Options */}
-                            {isExpanded && (
-                              <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
-                                {(selectedMovie?.media_type === 'tv'
-                                  ? groupSeasons(country.options)
-                                  : country.options
-                                ).map((avail, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
-                                  >
-                                    <div className="flex items-start justify-between mb-3">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        {/* For addons, show addon name first */}
-                                        {avail.streaming_type === 'addon' && avail.addon_name ? (
-                                          <>
-                                            <span className="text-sm bg-blue-600 text-white px-3 py-1 rounded-full font-black">
-                                              📡 {avail.addon_name}
-                                            </span>
-                                            <span className="text-xs text-gray-400 italic">
-                                              (via {avail.platform})
-                                            </span>
-                                          </>
-                                        ) : (
-                                          <span className={`text-sm ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}>
-                                            {getPlatformStyle(avail.platform).icon} {avail.platform}
-                                          </span>
-                                        )}
-
-                                        {/* Show "INCLUS" badge for Prime subscription to clarify it's included */}
-                                        {avail.platform === 'Amazon Prime' && avail.streaming_type === 'subscription' && (
-                                          <span className="text-xs px-2 py-1 rounded bg-green-600 text-white font-bold">
-                                            ✓ INCLUS
-                                          </span>
-                                        )}
-
-                                        {/* Show season information for TV series */}
-                                        {selectedMovie?.media_type === 'tv' && avail.seasonsText && (
-                                          <span className="text-xs px-2 py-1 rounded bg-purple-600 text-white font-bold">
-                                            📺 {avail.seasonsText}
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      {/* Type badges */}
-                                      <div className="flex flex-col gap-1 items-end">
-                                        {avail.streaming_type === 'addon' && (
-                                          <span className="text-xs px-2 py-1 rounded bg-orange-600 text-white font-bold">
-                                            💳 ABONNEMENT SÉPARÉ
-                                          </span>
-                                        )}
-                                        {avail.streaming_type === 'rent' && (
-                                          <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
-                                            🎬 LOCATION
-                                          </span>
-                                        )}
-                                        {avail.streaming_type === 'buy' && (
-                                          <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
-                                            💰 ACHAT
-                                          </span>
-                                        )}
-                                        {avail.streaming_type === 'free' && (
-                                          <span className="text-sm px-3 py-1 rounded-lg bg-cyan-600 text-white font-black shadow-lg">
-                                            🆓 GRATUIT
-                                          </span>
-                                        )}
-                                      </div>
+                            return (
+                              <div
+                                key={country.country_code}
+                                className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all"
+                              >
+                                {/* Country Header */}
+                                <button
+                                  onClick={() => toggleCountry(country.country_code)}
+                                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800 transition-all"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <img
+                                      src={`https://flagcdn.com/48x36/${country.country_code.toLowerCase()}.png`}
+                                      alt={`Drapeau ${country.country_name}`}
+                                      className="w-12 h-9 rounded shadow-lg border border-gray-600"
+                                      onError={e => {
+                                        e.target.style.display = "none";
+                                      }}
+                                    />
+                                    <div className="text-left">
+                                      <h5 className="font-black text-white text-xl">{country.country_name}</h5>
+                                      <p className="text-gray-400 text-sm">
+                                        {optionsCount} option{optionsCount > 1 ? "s" : ""} disponible{optionsCount > 1 ? "s" : ""}
+                                      </p>
                                     </div>
-
-                                    <div className="flex items-center gap-4 mb-3 text-sm">
-                                      <div className="flex items-center gap-2">
-                                        {avail.has_french_audio ? (
-                                          <CheckCircle className="w-4 h-4 text-green-400" />
-                                        ) : (
-                                          <XCircle className="w-4 h-4 text-gray-600" />
-                                        )}
-                                        <span className={avail.has_french_audio ? 'text-green-400 font-medium' : 'text-gray-500'}>
-                                          VF
-                                        </span>
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        {avail.has_french_subtitles ? (
-                                          <CheckCircle className="w-4 h-4 text-green-400" />
-                                        ) : (
-                                          <XCircle className="w-4 h-4 text-gray-600" />
-                                        )}
-                                        <span className={avail.has_french_subtitles ? 'text-green-400 font-medium' : 'text-gray-500'}>
-                                          VOSTFR
-                                        </span>
-                                      </div>
-
-                                      {avail.quality && (
-                                        <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
-                                          {avail.quality.toUpperCase()}
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    {avail.streaming_url && (
-                                      <a
-                                        href={avail.streaming_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`block text-center ${
-                                          avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
-                                        } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
-                                      >
-                                        {avail.streaming_type === 'rent'
-                                          ? '🎬 Louer'
-                                          : avail.streaming_type === 'buy'
-                                          ? '💰 Acheter'
-                                          : avail.streaming_type === 'addon' && avail.addon_name
-                                          ? `💳 S'abonner à ${avail.addon_name}`
-                                          : avail.streaming_type === 'addon'
-                                          ? `📡 Chaîne payante`
-                                          : avail.streaming_type === 'free'
-                                          ? `🆓 Voir sur ${avail.platform}`
-                                          : `▶ Voir sur ${avail.platform}`}
-                                      </a>
-                                    )}
                                   </div>
-                                ))}
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-red-500 font-black text-2xl">
+                                      {isExpanded ? "▼" : "▶"}
+                                    </span>
+                                  </div>
+                                </button>
+
+                                {/* Options for this country */}
+                                {isExpanded && (
+                                  <div className="px-6 pb-6 pt-2 border-t border-gray-700 space-y-3 bg-gray-900/30">
+                                    {(selectedMovie?.media_type === "tv"
+                                      ? groupSeasons(country.options)
+                                      : country.options
+                                    ).map((avail, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-gray-800 rounded-xl p-4 hover:bg-gray-750 transition-all"
+                                      >
+                                        <div className="flex items-start justify-between mb-3">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            {avail.streaming_type === "addon" && avail.addon_name ? (
+                                              <>
+                                                <span className="text-sm bg-blue-600 text-white px-3 py-1 rounded-full font-black">
+                                                  📡 {avail.addon_name}
+                                                </span>
+                                                <span className="text-xs text-gray-400 italic">
+                                                  (via {avail.platform})
+                                                </span>
+                                              </>
+                                            ) : (
+                                              <span
+                                                className={`text-sm ${getPlatformStyle(avail.platform).bg} ${getPlatformStyle(avail.platform).text} px-3 py-1 rounded-full font-black`}
+                                              >
+                                                {getPlatformStyle(avail.platform).icon} {avail.platform}
+                                              </span>
+                                            )}
+
+                                            {avail.platform === "Amazon Prime" && avail.streaming_type === "subscription" && (
+                                              <span className="text-xs px-2 py-1 rounded bg-green-600 text-white font-bold">
+                                                ✓ INCLUS
+                                              </span>
+                                            )}
+
+                                            {selectedMovie?.media_type === "tv" && avail.seasonsText && (
+                                              <span className="text-xs px-2 py-1 rounded bg-purple-600 text-white font-bold">
+                                                📺 {avail.seasonsText}
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          <div className="flex flex-col gap-1 items-end">
+                                            {avail.streaming_type === "addon" && (
+                                              <span className="text-xs px-2 py-1 rounded bg-orange-600 text-white font-bold">
+                                                💳 ABONNEMENT SÉPARÉ
+                                              </span>
+                                            )}
+                                            {avail.streaming_type === "rent" && (
+                                              <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
+                                                🎬 LOCATION
+                                              </span>
+                                            )}
+                                            {avail.streaming_type === "buy" && (
+                                              <span className="text-sm px-3 py-1 rounded-lg bg-orange-600 text-white font-black shadow-lg">
+                                                💰 ACHAT
+                                              </span>
+                                            )}
+                                            {avail.streaming_type === "free" && (
+                                              <span className="text-sm px-3 py-1 rounded-lg bg-cyan-600 text-white font-black shadow-lg">
+                                                🆓 GRATUIT
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-4 mb-3 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            {avail.has_french_audio ? (
+                                              <CheckCircle className="w-4 h-4 text-green-400" />
+                                            ) : (
+                                              <XCircle className="w-4 h-4 text-gray-600" />
+                                            )}
+                                            <span
+                                              className={avail.has_french_audio ? "text-green-400 font-medium" : "text-gray-500"}
+                                            >
+                                              VF
+                                            </span>
+                                          </div>
+
+                                          <div className="flex items-center gap-2">
+                                            {avail.has_french_subtitles ? (
+                                              <CheckCircle className="w-4 h-4 text-green-400" />
+                                            ) : (
+                                              <XCircle className="w-4 h-4 text-gray-600" />
+                                            )}
+                                            <span
+                                              className={avail.has_french_subtitles ? "text-green-400 font-medium" : "text-gray-500"}
+                                            >
+                                              VOSTFR
+                                            </span>
+                                          </div>
+
+                                          {avail.quality && (
+                                            <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded font-semibold">
+                                              {avail.quality.toUpperCase()}
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        {avail.streaming_url && (
+                                          <a
+                                            href={avail.streaming_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`block text-center ${
+                                              avail.streaming_type === "addon"
+                                                ? "bg-blue-600"
+                                                : getPlatformStyle(avail.platform).bg
+                                            } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
+                                          >
+                                            {avail.streaming_type === "rent"
+                                              ? "🎬 Louer"
+                                              : avail.streaming_type === "buy"
+                                              ? "💰 Acheter"
+                                              : avail.streaming_type === "addon" && avail.addon_name
+                                              ? `💳 S'abonner à ${avail.addon_name}`
+                                              : avail.streaming_type === "addon"
+                                              ? "📡 Chaîne payante"
+                                              : avail.streaming_type === "free"
+                                              ? `🆓 Voir sur ${avail.platform}`
+                                              : `▶ Voir sur ${avail.platform}`}
+                                          </a>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* VPN CTA */}
                 <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
@@ -1246,7 +1261,6 @@ export default function App() {
                 </div>
               </div>
             )}
-          </div>
         )}
       </main>
 
