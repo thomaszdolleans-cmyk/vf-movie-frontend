@@ -1,0 +1,17 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000000000000000000000000000000000000..087dc5959b375ef9ac0573f246d052e9447b5bb6
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,11 @@
++node_modules
++.dist
++.dist-ssr
++dist
++.vscode
++*.log
++npm-debug.log*
++yarn-debug.log*
++yarn-error.log*
++.env
++.DS_Store
