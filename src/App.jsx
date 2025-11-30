@@ -982,7 +982,7 @@ export default function App() {
                     🔐 Nos partenaires VPN
                   </h3>
                   <p className="text-purple-200 text-sm md:text-lg max-w-2xl mx-auto">
-                    Accédez aux catalogues de streaming du monde entier en toute sécurité et confidentialité
+                    Naviguez en toute sécurité et protégez votre vie privée en ligne
                   </p>
                 </div>
 
@@ -1346,7 +1346,7 @@ export default function App() {
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-12 border border-gray-700 text-center">
                 <Loader className="w-16 h-16 text-red-500 mx-auto mb-6 animate-spin" />
                 <p className="text-white text-2xl font-bold mb-2">Recherche en cours...</p>
-                <p className="text-gray-400 text-lg">Analyse des catalogues de streaming dans le monde entier</p>
+                <p className="text-gray-400 text-lg">Recherche des disponibilités en cours...</p>
               </div>
             )}
 
@@ -1804,14 +1804,6 @@ export default function App() {
                   Elles sont affichées via l'API TMDB conformément à leurs conditions d'utilisation.
                 </p>
               </section>
-
-              <section>
-                <h3 className="text-lg font-bold text-white mb-2">9. Contact</h3>
-                <p className="text-sm">
-                  Pour toute question concernant ce site, vous pouvez nous contacter via les réseaux sociaux 
-                  accessibles depuis le bouton de partage.
-                </p>
-              </section>
             </div>
           </div>
         </div>
@@ -1921,14 +1913,6 @@ export default function App() {
                 <p className="text-sm">
                   Nous nous réservons le droit de modifier cette politique de confidentialité à tout moment. 
                   Les modifications seront effectives dès leur publication sur cette page.
-                </p>
-              </section>
-
-              <section>
-                <h3 className="text-lg font-bold text-white mb-2">10. Contact</h3>
-                <p className="text-sm">
-                  Pour toute question relative à cette politique de confidentialité, vous pouvez nous contacter 
-                  via les réseaux sociaux accessibles depuis le bouton de partage du site.
                 </p>
               </section>
             </div>
