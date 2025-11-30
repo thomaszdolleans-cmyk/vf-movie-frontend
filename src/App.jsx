@@ -780,8 +780,8 @@ export default function App() {
                       <Shield className="w-8 h-8 text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-white font-bold text-lg">🔐 Protégez votre vie privée</p>
-                      <p className="text-purple-200 text-sm hidden md:block">Naviguez en toute sécurité avec un VPN de confiance</p>
+                      <p className="text-white font-bold text-lg">🌍 Accédez aux catalogues du monde entier</p>
+                      <p className="text-purple-200 text-sm hidden md:block">Regardez les films et séries disponibles dans d'autres pays</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -979,10 +979,10 @@ export default function App() {
                     <Shield className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl md:text-4xl font-black text-white mb-3">
-                    🔐 Nos partenaires VPN
+                    🌍 Accédez à tous les catalogues
                   </h3>
                   <p className="text-purple-200 text-sm md:text-lg max-w-2xl mx-auto">
-                    Naviguez en toute sécurité et protégez votre vie privée en ligne
+                    Changez virtuellement de pays pour regarder les contenus disponibles ailleurs
                   </p>
                 </div>
 
@@ -1057,8 +1057,11 @@ export default function App() {
                   </a>
                 </div>
 
-                <p className="text-center text-purple-300 text-xs md:text-sm">
-                  💡 Un VPN protège votre vie privée en ligne et sécurise votre connexion
+                <p className="text-center text-purple-300 text-xs md:text-sm mb-2">
+                  💡 Un VPN vous permet de changer virtuellement de pays et d'accéder aux catalogues étrangers
+                </p>
+                <p className="text-center text-gray-500 text-xs">
+                  * L'utilisateur est responsable de respecter les conditions d'utilisation des plateformes qu'il utilise
                 </p>
               </div>
             </div>
@@ -1603,14 +1606,14 @@ export default function App() {
                       <Shield className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
-                      🔐 Protégez votre connexion
+                      🌍 Ce contenu n'est pas disponible dans votre pays ?
                     </h3>
-                    <p className="text-purple-200 text-lg mb-8 max-w-2xl mx-auto">
-                      Naviguez en toute sécurité et confidentialité avec un VPN
+                    <p className="text-purple-200 text-lg mb-6 max-w-2xl mx-auto">
+                      Utilisez un VPN pour accéder aux catalogues des autres pays
                     </p>
                     
                     {/* VPN Buttons */}
-                    <div className="flex flex-wrap gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center mb-4">
                       <a
                         href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
                         target="_blank"
@@ -1648,6 +1651,9 @@ export default function App() {
                         CyberGhost
                       </a>
                     </div>
+                    <p className="text-gray-500 text-xs">
+                      * L'utilisateur est responsable de respecter les CGU des plateformes
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1779,12 +1785,20 @@ export default function App() {
               </section>
 
               <section>
-                <h3 className="text-lg font-bold text-white mb-2">6. Services VPN</h3>
-                <p className="text-sm">
-                  Les services VPN présentés sur ce site sont mentionnés à titre informatif pour permettre aux utilisateurs 
-                  de protéger leur vie privée en ligne. L'utilisation d'un VPN est légale dans la plupart des pays. 
-                  Nous rappelons aux utilisateurs de respecter les conditions d'utilisation des plateformes de streaming 
-                  qu'ils utilisent.
+                <h3 className="text-lg font-bold text-white mb-2">6. Services VPN et accès aux catalogues</h3>
+                <p className="text-sm mb-2">
+                  Ce site présente des services VPN partenaires qui permettent de changer virtuellement de localisation 
+                  et ainsi d'accéder aux catalogues de streaming disponibles dans d'autres pays.
+                </p>
+                <p className="text-sm mb-2">
+                  <strong>L'utilisation d'un VPN est légale</strong> dans la plupart des pays (hors Chine, Russie, etc.). 
+                  Cependant, l'accès à des catalogues géo-restreints peut contrevenir aux conditions d'utilisation 
+                  de certaines plateformes de streaming.
+                </p>
+                <p className="text-sm text-yellow-400">
+                  ⚠️ L'utilisateur est seul responsable de l'utilisation qu'il fait des services VPN et du respect 
+                  des conditions d'utilisation des plateformes qu'il utilise. VF Movie Finder décline toute responsabilité 
+                  en cas de fermeture de compte ou de toute autre conséquence.
                 </p>
               </section>
 
