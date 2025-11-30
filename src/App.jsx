@@ -2155,12 +2155,27 @@ export default function App() {
                       <p className="mb-3">
                         Les pays avec les <strong>meilleurs catalogues de contenus en français</strong> sont généralement :
                       </p>
-                      <ul className="list-disc list-inside space-y-2 mb-3">
-                        <li><strong>🇫🇷 France</strong> - Le plus grand catalogue de films et séries en VF</li>
-                        <li><strong>🇧🇪 Belgique</strong> - Excellent catalogue francophone, souvent identique à la France</li>
-                        <li><strong>🇨🇭 Suisse</strong> - Bon catalogue multilingue incluant le français</li>
-                        <li><strong>🇨🇦 Canada</strong> - Catalogue bilingue avec beaucoup de contenu en VF</li>
-                        <li><strong>🇱🇺 Luxembourg</strong> - Petit pays mais catalogue francophone complet</li>
+                      <ul className="space-y-2 mb-3">
+                        <li className="flex items-center gap-2">
+                          <img src="https://flagcdn.com/24x18/fr.png" alt="France" className="w-6 h-4 inline" />
+                          <span><strong>France</strong> - Le plus grand catalogue de films et séries en VF</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <img src="https://flagcdn.com/24x18/be.png" alt="Belgique" className="w-6 h-4 inline" />
+                          <span><strong>Belgique</strong> - Excellent catalogue francophone, souvent identique à la France</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <img src="https://flagcdn.com/24x18/ch.png" alt="Suisse" className="w-6 h-4 inline" />
+                          <span><strong>Suisse</strong> - Bon catalogue multilingue incluant le français</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <img src="https://flagcdn.com/24x18/ca.png" alt="Canada" className="w-6 h-4 inline" />
+                          <span><strong>Canada</strong> - Catalogue bilingue avec beaucoup de contenu en VF</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <img src="https://flagcdn.com/24x18/lu.png" alt="Luxembourg" className="w-6 h-4 inline" />
+                          <span><strong>Luxembourg</strong> - Petit pays mais catalogue francophone complet</span>
+                        </li>
                       </ul>
                       <p>
                         Utilisez VF Movie Finder pour <strong>comparer les catalogues</strong> et trouver où votre film préféré 
