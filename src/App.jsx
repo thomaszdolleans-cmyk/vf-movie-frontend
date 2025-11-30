@@ -494,7 +494,7 @@ export default function App() {
       </header>
 
       {/* iOS Install Instructions */}
-      {typeof window!=='undefined' && isIOS && showIOSPrompt && !window.navigator.standalone && (
+      {isIOS && showIOSPrompt && !window.navigator.standalone && (
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 border-b-2 md:border-b-4 border-blue-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
             <div className="flex items-start justify-between flex-wrap gap-2 md:gap-4">
@@ -859,7 +859,7 @@ export default function App() {
                                   {style.icon} {platform} ({count})
                                 </button>
                               );
-                            })}
+                            })
                           </div>
                         </div>
                       )}
@@ -957,7 +957,7 @@ export default function App() {
                                   {country.name} ({count})
                                 </option>
                               );
-                            })}
+                            })
                           </select>
                         </div>
                       )}
@@ -1207,7 +1207,7 @@ export default function App() {
                             )}
                           </div>
                         );
-                      })}
+                      })
                     </div>
                   </div>
                 )}
@@ -1219,7 +1219,7 @@ export default function App() {
                     Débloquez ce film avec un VPN
                   </h3>
                   <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                    Changez virtuellement de pays pour accéder à n'importe quel catalogue Netflix
+                    Changez virtuellement de pays pour accéder à n'importe quel catalogue streaming
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
