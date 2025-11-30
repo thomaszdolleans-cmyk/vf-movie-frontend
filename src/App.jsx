@@ -240,6 +240,59 @@ export default function App() {
   // Convert to array and sort by number of options (descending)
   const countriesArray = Object.values(groupedByCountry).sort((a, b) => b.options.length - a.options.length);
   
+  // Group countries by geographic region
+  const regionMapping = {
+    // Europe
+    'FR': '🇪🇺 Europe', 'DE': '🇪🇺 Europe', 'GB': '🇪🇺 Europe', 'IT': '🇪🇺 Europe', 'ES': '🇪🇺 Europe',
+    'PT': '🇪🇺 Europe', 'NL': '🇪🇺 Europe', 'BE': '🇪🇺 Europe', 'CH': '🇪🇺 Europe', 'AT': '🇪🇺 Europe',
+    'IE': '🇪🇺 Europe', 'SE': '🇪🇺 Europe', 'NO': '🇪🇺 Europe', 'DK': '🇪🇺 Europe', 'FI': '🇪🇺 Europe',
+    'PL': '🇪🇺 Europe', 'CZ': '🇪🇺 Europe', 'HU': '🇪🇺 Europe', 'RO': '🇪🇺 Europe', 'GR': '🇪🇺 Europe',
+    'HR': '🇪🇺 Europe', 'SK': '🇪🇺 Europe', 'SI': '🇪🇺 Europe', 'BG': '🇪🇺 Europe', 'LT': '🇪🇺 Europe',
+    'LV': '🇪🇺 Europe', 'EE': '🇪🇺 Europe', 'IS': '🇪🇺 Europe', 'LU': '🇪🇺 Europe', 'MT': '🇪🇺 Europe',
+    'CY': '🇪🇺 Europe', 'RS': '🇪🇺 Europe', 'UA': '🇪🇺 Europe', 'BA': '🇪🇺 Europe', 'ME': '🇪🇺 Europe',
+    'MK': '🇪🇺 Europe', 'AL': '🇪🇺 Europe', 'MD': '🇪🇺 Europe', 'BY': '🇪🇺 Europe', 'RU': '🇪🇺 Europe',
+    'TR': '🇪🇺 Europe',
+    
+    // Americas
+    'US': '🌎 Amériques', 'CA': '🌎 Amériques', 'MX': '🌎 Amériques', 'BR': '🌎 Amériques', 'AR': '🌎 Amériques',
+    'CL': '🌎 Amériques', 'CO': '🌎 Amériques', 'PE': '🌎 Amériques', 'VE': '🌎 Amériques', 'EC': '🌎 Amériques',
+    'UY': '🌎 Amériques', 'PY': '🌎 Amériques', 'BO': '🌎 Amériques', 'CR': '🌎 Amériques', 'PA': '🌎 Amériques',
+    'GT': '🌎 Amériques', 'HN': '🌎 Amériques', 'NI': '🌎 Amériques', 'SV': '🌎 Amériques', 'DO': '🌎 Amériques',
+    'CU': '🌎 Amériques', 'JM': '🌎 Amériques', 'TT': '🌎 Amériques', 'BB': '🌎 Amériques', 'BS': '🌎 Amériques',
+    'BZ': '🌎 Amériques', 'GY': '🌎 Amériques', 'SR': '🌎 Amériques', 'GF': '🌎 Amériques', 'HT': '🌎 Amériques',
+    
+    // Asia-Pacific
+    'JP': '🌏 Asie-Pacifique', 'KR': '🌏 Asie-Pacifique', 'CN': '🌏 Asie-Pacifique', 'IN': '🌏 Asie-Pacifique',
+    'TH': '🌏 Asie-Pacifique', 'VN': '🌏 Asie-Pacifique', 'PH': '🌏 Asie-Pacifique', 'ID': '🌏 Asie-Pacifique',
+    'MY': '🌏 Asie-Pacifique', 'SG': '🌏 Asie-Pacifique', 'TW': '🌏 Asie-Pacifique', 'HK': '🌏 Asie-Pacifique',
+    'AU': '🌏 Asie-Pacifique', 'NZ': '🌏 Asie-Pacifique', 'PK': '🌏 Asie-Pacifique', 'BD': '🌏 Asie-Pacifique',
+    'LK': '🌏 Asie-Pacifique', 'MM': '🌏 Asie-Pacifique', 'KH': '🌏 Asie-Pacifique', 'LA': '🌏 Asie-Pacifique',
+    'MN': '🌏 Asie-Pacifique', 'NP': '🌏 Asie-Pacifique', 'BT': '🌏 Asie-Pacifique', 'MV': '🌏 Asie-Pacifique',
+    
+    // Middle East & Africa
+    'ZA': '🌍 Afrique & Moyen-Orient', 'EG': '🌍 Afrique & Moyen-Orient', 'NG': '🌍 Afrique & Moyen-Orient',
+    'KE': '🌍 Afrique & Moyen-Orient', 'MA': '🌍 Afrique & Moyen-Orient', 'TN': '🌍 Afrique & Moyen-Orient',
+    'DZ': '🌍 Afrique & Moyen-Orient', 'GH': '🌍 Afrique & Moyen-Orient', 'SN': '🌍 Afrique & Moyen-Orient',
+    'CI': '🌍 Afrique & Moyen-Orient', 'SA': '🌍 Afrique & Moyen-Orient', 'AE': '🌍 Afrique & Moyen-Orient',
+    'IL': '🌍 Afrique & Moyen-Orient', 'QA': '🌍 Afrique & Moyen-Orient', 'KW': '🌍 Afrique & Moyen-Orient',
+    'BH': '🌍 Afrique & Moyen-Orient', 'OM': '🌍 Afrique & Moyen-Orient', 'JO': '🌍 Afrique & Moyen-Orient',
+    'LB': '🌍 Afrique & Moyen-Orient', 'IQ': '🌍 Afrique & Moyen-Orient', 'YE': '🌍 Afrique & Moyen-Orient',
+    'ET': '🌍 Afrique & Moyen-Orient', 'UG': '🌍 Afrique & Moyen-Orient', 'TZ': '🌍 Afrique & Moyen-Orient'
+  };
+  
+  const countriesByRegion = countriesArray.reduce((acc, country) => {
+    const region = regionMapping[country.country_code] || '🌍 Autres régions';
+    if (!acc[region]) {
+      acc[region] = [];
+    }
+    acc[region].push(country);
+    return acc;
+  }, {});
+  
+  // Sort regions: Europe first, then Americas, then Asia-Pacific, then Middle East & Africa, then Others
+  const regionOrder = ['🇪🇺 Europe', '🌎 Amériques', '🌏 Asie-Pacifique', '🌍 Afrique & Moyen-Orient', '🌍 Autres régions'];
+  const sortedRegions = regionOrder.filter(region => countriesByRegion[region]);
+  
   // Get unique countries for filter
   let availableCountries = [];
   try {
@@ -524,10 +577,10 @@ export default function App() {
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-4 md:p-8 lg:p-12 border border-gray-700 shadow-2xl mb-6 md:mb-8">
               <div className="text-center mb-4 md:mb-8">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3">
-                  Trouvez votre film en VF 🎬
+                  Trouvez vos films et séries en VF ou VOSTFR 🎬📺
                 </h2>
                 <p className="text-gray-300 text-sm md:text-lg hidden md:block">
-                  Recherchez parmi des milliers de films disponibles sur Netflix dans le monde
+                  Recherchez parmi des milliers de films et séries disponibles dans le monde
                 </p>
               </div>
 
@@ -537,7 +590,7 @@ export default function App() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher un film... (ex: Inception, Matrix, Amélie)"
+                  placeholder="Rechercher un film ou une série... (ex: Inception, Stranger Things)"
                   className="w-full pl-14 pr-6 py-5 bg-white rounded-2xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-red-500/50 text-lg font-medium shadow-xl transition-all"
                 />
               </div>
@@ -988,17 +1041,19 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Countries - Grouped and Collapsible */}
+                {/* Countries - Grouped by Region */}
                 {countriesArray && countriesArray.length > 0 && (
-                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
-                    <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
-                      <span className="bg-red-600 w-2 h-8 rounded-full"></span>
-                      Pays ({countriesArray.length})
-                    </h4>
-                    <div className="space-y-3">
-                      {countriesArray.map((country) => {
-                        const isExpanded = expandedCountries[country.country_code];
-                        const optionsCount = country.options.length;
+                  <div className="space-y-6">
+                    {sortedRegions.map(region => (
+                      <div key={region} className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+                        <h4 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
+                          <span className="bg-red-600 w-2 h-8 rounded-full"></span>
+                          {region} ({countriesByRegion[region].length})
+                        </h4>
+                        <div className="space-y-3">
+                          {countriesByRegion[region].map((country) => {
+                            const isExpanded = expandedCountries[country.country_code];
+                            const optionsCount = country.options.length;
                         
                         return (
                           <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
@@ -1197,7 +1252,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center space-y-3">
             <p className="text-gray-400 text-sm">
-              Données fournies par TMDb et uNoGS · Non affilié à Netflix
+              Données fournies par TMDb et Streaming Availability
             </p>
             <p className="text-gray-500 text-sm">
               🇫🇷 Fait avec ❤️ pour les francophones du monde entier
