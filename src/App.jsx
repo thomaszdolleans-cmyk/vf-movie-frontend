@@ -1055,8 +1055,8 @@ export default function App() {
                             const isExpanded = expandedCountries[country.country_code];
                             const optionsCount = country.options.length;
                         
-                        return (
-                          <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
+                            return (
+                              <div key={country.country_code} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-gray-700 overflow-hidden hover:border-red-500 transition-all">
                             {/* Country Header - Clickable */}
                             <button
                               onClick={() => toggleCountry(country.country_code)}
@@ -1208,6 +1208,8 @@ export default function App() {
                         );
                       })}
                     </div>
+                  </div>
+                    ))}
                   </div>
                 )}
 
