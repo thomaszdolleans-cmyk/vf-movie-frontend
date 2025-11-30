@@ -53,7 +53,6 @@ export default function App() {
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   
   // Discover section states
-  const [discoverTab, setDiscoverTab] = useState('trending'); // 'trending' or 'discover'
   const [discoverResults, setDiscoverResults] = useState([]);
   const [genres, setGenres] = useState([]);
   const [discoverType, setDiscoverType] = useState('movie'); // 'movie' or 'tv'
@@ -128,25 +127,19 @@ export default function App() {
     loadGenres();
   }, []);
 
-  // Load discover/trending content
+  // Load discover content
   useEffect(() => {
     const loadDiscoverContent = async () => {
       setLoadingDiscover(true);
       try {
-        let url;
-        if (discoverTab === 'trending') {
-          url = `${API_URL}/api/trending?type=${discoverType}&time=week`;
-        } else {
-          const params = new URLSearchParams({
-            type: discoverType,
-            sort: discoverSort
-          });
-          if (discoverGenre) params.append('genre', discoverGenre);
-          if (discoverYear) params.append('year', discoverYear);
-          url = `${API_URL}/api/discover?${params.toString()}`;
-        }
+        const params = new URLSearchParams({
+          type: discoverType,
+          sort: discoverSort
+        });
+        if (discoverGenre) params.append('genre', discoverGenre);
+        if (discoverYear) params.append('year', discoverYear);
         
-        const response = await fetch(url);
+        const response = await fetch(`${API_URL}/api/discover?${params.toString()}`);
         const data = await response.json();
         setDiscoverResults(data.results || []);
       } catch (err) {
@@ -156,7 +149,7 @@ export default function App() {
       }
     };
     loadDiscoverContent();
-  }, [discoverTab, discoverType, discoverGenre, discoverYear, discoverSort]);
+  }, [discoverType, discoverGenre, discoverYear, discoverSort]);
 
   const searchMovies = async (query) => {
     setLoading(true);
@@ -709,29 +702,11 @@ export default function App() {
             {/* Discover Section - Only show when no search results */}
             {searchResults.length === 0 && !searchQuery && (
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
-                {/* Tabs */}
-                <div className="flex gap-4 mb-6">
-                  <button
-                    onClick={() => setDiscoverTab('trending')}
-                    className={`px-6 py-3 rounded-xl font-bold text-lg transition-all ${
-                      discoverTab === 'trending'
-                        ? 'bg-red-600 text-white shadow-lg'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    🔥 Tendances
-                  </button>
-                  <button
-                    onClick={() => setDiscoverTab('discover')}
-                    className={`px-6 py-3 rounded-xl font-bold text-lg transition-all ${
-                      discoverTab === 'discover'
-                        ? 'bg-red-600 text-white shadow-lg'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                  >
-                    🎬 Explorer
-                  </button>
-                </div>
+                {/* Title */}
+                <h3 className="text-2xl md:text-3xl font-black text-white mb-6 flex items-center gap-3">
+                  <span className="bg-red-600 w-2 h-8 rounded-full"></span>
+                  🎬 Explorer
+                </h3>
 
                 {/* Filters */}
                 <div className="flex flex-wrap gap-3 mb-6">
@@ -746,45 +721,39 @@ export default function App() {
                   </select>
 
                   {/* Genre Filter */}
-                  {discoverTab === 'discover' && (
-                    <select
-                      value={discoverGenre}
-                      onChange={(e) => setDiscoverGenre(e.target.value)}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="">Tous les genres</option>
-                      {genres.map(genre => (
-                        <option key={genre.id} value={genre.id}>{genre.name}</option>
-                      ))}
-                    </select>
-                  )}
+                  <select
+                    value={discoverGenre}
+                    onChange={(e) => setDiscoverGenre(e.target.value)}
+                    className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">Tous les genres</option>
+                    {genres.map(genre => (
+                      <option key={genre.id} value={genre.id}>{genre.name}</option>
+                    ))}
+                  </select>
 
                   {/* Year Filter */}
-                  {discoverTab === 'discover' && (
-                    <select
-                      value={discoverYear}
-                      onChange={(e) => setDiscoverYear(e.target.value)}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="">Toutes les années</option>
-                      {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  )}
+                  <select
+                    value={discoverYear}
+                    onChange={(e) => setDiscoverYear(e.target.value)}
+                    className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">Toutes les années</option>
+                    {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
 
                   {/* Sort Filter */}
-                  {discoverTab === 'discover' && (
-                    <select
-                      value={discoverSort}
-                      onChange={(e) => setDiscoverSort(e.target.value)}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="popularity">📈 Popularité</option>
-                      <option value="vote_average">⭐ Note</option>
-                      <option value="release_date">📅 Date de sortie</option>
-                    </select>
-                  )}
+                  <select
+                    value={discoverSort}
+                    onChange={(e) => setDiscoverSort(e.target.value)}
+                    className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="popularity">📈 Popularité</option>
+                    <option value="vote_average">⭐ Note</option>
+                    <option value="release_date">📅 Date de sortie</option>
+                  </select>
                 </div>
 
                 {/* Results Grid */}
