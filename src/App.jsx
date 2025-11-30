@@ -699,6 +699,63 @@ export default function App() {
               )}
             </div>
 
+            {/* VPN Partners Banner - Compact version above discover */}
+            {searchResults.length === 0 && !searchQuery && (
+              <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 rounded-2xl p-4 md:p-6 border border-purple-500/30 shadow-xl mb-6">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-8 h-8 text-purple-400" />
+                    <div>
+                      <p className="text-white font-bold text-lg">🔓 Débloquez tous les catalogues</p>
+                      <p className="text-purple-200 text-sm hidden md:block">Accédez aux contenus de n'importe quel pays avec un VPN</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap justify-center">
+                    {/* NordVPN */}
+                    <a
+                      href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#4687FF] hover:bg-[#3a75e0] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
+                    >
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" alt="NordVPN" className="h-4 w-auto brightness-0 invert" />
+                      NordVPN
+                    </a>
+                    {/* ExpressVPN */}
+                    <a
+                      href="https://www.expressvpn.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#DA3940] hover:bg-[#c13138] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
+                    >
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" alt="ExpressVPN" className="h-4 w-auto brightness-0 invert" />
+                      ExpressVPN
+                    </a>
+                    {/* Surfshark */}
+                    <a
+                      href="https://surfshark.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#178BCC] hover:bg-[#1379b3] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
+                    >
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" alt="Surfshark" className="h-4 w-auto brightness-0 invert" />
+                      Surfshark
+                    </a>
+                    {/* CyberGhost */}
+                    <a
+                      href="https://www.cyberghostvpn.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#FFCC00] hover:bg-[#e6b800] text-black px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
+                    >
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" alt="CyberGhost" className="h-4 w-auto" />
+                      CyberGhost
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Discover Section - Only show when no search results */}
             {searchResults.length === 0 && !searchQuery && (
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
@@ -834,38 +891,118 @@ export default function App() {
               </div>
             )}
 
-            {/* VPN Section */}
-            <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 text-center shadow-2xl border border-red-500">
-              <Shield className="w-12 h-12 md:w-16 md:h-16 text-white mx-auto mb-3 md:mb-4" />
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-3 md:mb-4">
-                Besoin d'un VPN ?
-              </h3>
-              <p className="text-white/90 text-sm md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto">
-                Accédez aux catalogues de streaming du monde entier en toute sécurité
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
-                <a
-                  href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white text-red-600 px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl w-full sm:w-auto justify-center"
-                >
-                  <Zap className="w-4 h-4 md:w-5 md:h-5" />
-                  NordVPN
-                </a>
-                <a
-                  href="https://www.expressvpn.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-white/20 transition-all hover:scale-105 w-full sm:w-auto justify-center"
-                >
-                  <Tv className="w-4 h-4 md:w-5 md:h-5" />
-                  ExpressVPN
-                </a>
+            {/* VPN Section - Full with all partners */}
+            <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-2xl border border-purple-500/30 overflow-hidden relative">
+              {/* Background decoration */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl"></div>
               </div>
-              <p className="text-white/70 text-xs md:text-sm mt-4 md:mt-6">
-                💰 Économisez jusqu'à 60% avec nos liens partenaires
-              </p>
+              
+              <div className="relative z-10">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl mb-4 shadow-lg">
+                    <Shield className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl md:text-4xl font-black text-white mb-3">
+                    🔐 Nos partenaires VPN
+                  </h3>
+                  <p className="text-purple-200 text-sm md:text-lg max-w-2xl mx-auto">
+                    Accédez aux catalogues de streaming du monde entier en toute sécurité et confidentialité
+                  </p>
+                </div>
+
+                {/* VPN Cards Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {/* NordVPN */}
+                  <a
+                    href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-gradient-to-br from-[#4687FF] to-[#3366CC] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                  >
+                    <div className="bg-white rounded-xl p-3 mb-3 inline-block">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" 
+                        alt="NordVPN" 
+                        className="h-6 md:h-8 w-auto mx-auto"
+                      />
+                    </div>
+                    <p className="text-white font-black text-lg md:text-xl">NordVPN</p>
+                    <p className="text-blue-200 text-xs md:text-sm mt-1">⭐ #1 Mondial</p>
+                    <div className="mt-3 bg-white/20 text-white text-xs md:text-sm px-3 py-1.5 rounded-lg font-bold group-hover:bg-white group-hover:text-blue-600 transition-all">
+                      Découvrir →
+                    </div>
+                  </a>
+
+                  {/* ExpressVPN */}
+                  <a
+                    href="https://www.expressvpn.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-gradient-to-br from-[#DA3940] to-[#B82E34] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                  >
+                    <div className="bg-white rounded-xl p-3 mb-3 inline-block">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" 
+                        alt="ExpressVPN" 
+                        className="h-6 md:h-8 w-auto mx-auto"
+                      />
+                    </div>
+                    <p className="text-white font-black text-lg md:text-xl">ExpressVPN</p>
+                    <p className="text-red-200 text-xs md:text-sm mt-1">🚀 Ultra rapide</p>
+                    <div className="mt-3 bg-white/20 text-white text-xs md:text-sm px-3 py-1.5 rounded-lg font-bold group-hover:bg-white group-hover:text-red-600 transition-all">
+                      Découvrir →
+                    </div>
+                  </a>
+
+                  {/* Surfshark */}
+                  <a
+                    href="https://surfshark.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-gradient-to-br from-[#178BCC] to-[#0E5C8A] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                  >
+                    <div className="bg-white rounded-xl p-3 mb-3 inline-block">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" 
+                        alt="Surfshark" 
+                        className="h-6 md:h-8 w-auto mx-auto"
+                      />
+                    </div>
+                    <p className="text-white font-black text-lg md:text-xl">Surfshark</p>
+                    <p className="text-cyan-200 text-xs md:text-sm mt-1">💰 Meilleur prix</p>
+                    <div className="mt-3 bg-white/20 text-white text-xs md:text-sm px-3 py-1.5 rounded-lg font-bold group-hover:bg-white group-hover:text-cyan-600 transition-all">
+                      Découvrir →
+                    </div>
+                  </a>
+
+                  {/* CyberGhost */}
+                  <a
+                    href="https://www.cyberghostvpn.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group bg-gradient-to-br from-[#FFCC00] to-[#E6A800] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                  >
+                    <div className="bg-white rounded-xl p-3 mb-3 inline-block">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" 
+                        alt="CyberGhost" 
+                        className="h-6 md:h-8 w-auto mx-auto"
+                      />
+                    </div>
+                    <p className="text-gray-900 font-black text-lg md:text-xl">CyberGhost</p>
+                    <p className="text-yellow-800 text-xs md:text-sm mt-1">🛡️ Simple & efficace</p>
+                    <div className="mt-3 bg-black/20 text-gray-900 text-xs md:text-sm px-3 py-1.5 rounded-lg font-bold group-hover:bg-gray-900 group-hover:text-yellow-400 transition-all">
+                      Découvrir →
+                    </div>
+                  </a>
+                </div>
+
+                <p className="text-center text-purple-300 text-xs md:text-sm">
+                  💡 Un VPN vous permet de changer virtuellement de pays et d'accéder à tous les catalogues
+                </p>
+              </div>
             </div>
           </>
         )}
@@ -1396,33 +1533,63 @@ export default function App() {
                 )}
 
                 {/* VPN CTA */}
-                <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-3xl p-8 md:p-10 text-center shadow-2xl border border-red-500">
-                  <Shield className="w-16 h-16 text-white mx-auto mb-4" />
-                  <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
-                    Débloquez ce contenu avec un VPN
-                  </h3>
-                  <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                    Changez virtuellement de pays pour accéder à n'importe quel catalogue de streaming
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a
-                      href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-white text-red-600 px-8 py-4 rounded-xl font-black text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl"
-                    >
-                      <Zap className="w-5 h-5" />
-                      Essayer NordVPN
-                    </a>
-                    <a
-                      href="https://www.expressvpn.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-lg text-white border-2 border-white px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-all hover:scale-105"
-                    >
-                      <Tv className="w-5 h-5" />
-                      Essayer ExpressVPN
-                    </a>
+                <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-3xl p-8 md:p-10 shadow-2xl border border-purple-500/30 overflow-hidden relative">
+                  {/* Background decoration */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl"></div>
+                  </div>
+                  
+                  <div className="relative z-10 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl mb-4 shadow-lg">
+                      <Shield className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
+                      🔐 Débloquez ce contenu
+                    </h3>
+                    <p className="text-purple-200 text-lg mb-8 max-w-2xl mx-auto">
+                      Changez virtuellement de pays pour accéder à n'importe quel catalogue
+                    </p>
+                    
+                    {/* VPN Buttons */}
+                    <div className="flex flex-wrap gap-3 justify-center">
+                      <a
+                        href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-[#4687FF] hover:bg-[#3a75e0] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
+                      >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" alt="NordVPN" className="h-5 w-auto brightness-0 invert" />
+                        NordVPN
+                      </a>
+                      <a
+                        href="https://www.expressvpn.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-[#DA3940] hover:bg-[#c13138] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
+                      >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" alt="ExpressVPN" className="h-5 w-auto brightness-0 invert" />
+                        ExpressVPN
+                      </a>
+                      <a
+                        href="https://surfshark.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-[#178BCC] hover:bg-[#1379b3] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
+                      >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" alt="Surfshark" className="h-5 w-auto brightness-0 invert" />
+                        Surfshark
+                      </a>
+                      <a
+                        href="https://www.cyberghostvpn.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-[#FFCC00] hover:bg-[#e6b800] text-black px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
+                      >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" alt="CyberGhost" className="h-5 w-auto" />
+                        CyberGhost
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
