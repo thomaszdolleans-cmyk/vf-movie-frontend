@@ -1,10 +1,11 @@
 diff --git a/src/App.jsx b/src/App.jsx
-index e4f25040f9347cab26d69cb7c61a4d27e773997c..fcc74811207cacf5e7c9aefeee355f2d3b6acce8 100644
+index e4f25040f9347cab26d69cb7c61a4d27e773997c..3ac4b5590943be3309e881d169aeede89a209400 100644
 --- a/src/App.jsx
 +++ b/src/App.jsx
-@@ -1,1282 +1,542 @@
+@@ -1,1282 +1,543 @@
 -import React, { useState, useEffect } from 'react';
 -import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle } from 'lucide-react';
++// VF Movie Finder – main application entry
 +import React, { useEffect, useMemo, useState } from 'react';
 +import {
 +  AlertCircle,
