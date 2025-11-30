@@ -1197,7 +1197,8 @@ export default function App() {
                                          avail.streaming_type === 'addon' && avail.addon_name ? `💳 S'abonner à ${avail.addon_name}` :
                                          avail.streaming_type === 'addon' ? `📡 Chaîne payante` :
                                          avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
-                                         `▶ Voir sur ${avail.platform}`}
+                                         `▶ Voir sur ${avail.platform}`
+                                        )} 
                                       </a>
                                     )}
                                   </div>
