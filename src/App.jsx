@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle, ChevronDown } from 'lucide-react';
+import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle, ChevronDown, Heart } from 'lucide-react';
 
 const API_URL = 'https://vf-movie-backend.onrender.com';
 
@@ -65,6 +65,61 @@ export default function App() {
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showFAQPage, setShowFAQPage] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [showFavoritesPage, setShowFavoritesPage] = useState(false);
+
+  // Load favorites from localStorage on mount
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('vf-movie-favorites');
+    if (savedFavorites) {
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (e) {
+        console.error('Error loading favorites:', e);
+      }
+    }
+  }, []);
+
+  // Save favorites to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('vf-movie-favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Check if a movie/show is in favorites
+  const isFavorite = (item) => {
+    return favorites.some(fav => fav.id === item.id && fav.media_type === item.media_type);
+  };
+
+  // Add to favorites
+  const addToFavorites = (item) => {
+    if (!isFavorite(item)) {
+      const favoriteItem = {
+        id: item.id,
+        media_type: item.media_type || 'movie',
+        title: item.title || item.name,
+        poster_path: item.poster_path,
+        vote_average: item.vote_average,
+        release_date: item.release_date || item.first_air_date,
+        added_at: new Date().toISOString()
+      };
+      setFavorites([...favorites, favoriteItem]);
+    }
+  };
+
+  // Remove from favorites
+  const removeFromFavorites = (item) => {
+    setFavorites(favorites.filter(fav => !(fav.id === item.id && fav.media_type === item.media_type)));
+  };
+
+  // Toggle favorite
+  const toggleFavorite = (item, e) => {
+    if (e) e.stopPropagation();
+    if (isFavorite(item)) {
+      removeFromFavorites(item);
+    } else {
+      addToFavorites(item);
+    }
+  };
 
   // Get share URL and text
   const getShareData = () => {
@@ -593,7 +648,7 @@ export default function App() {
           <div className="flex items-center justify-between gap-4">
             {/* Logo - Clickable to return home */}
             <button
-              onClick={() => { setShowFAQPage(false); setShowLegalModal(false); setShowPrivacyModal(false); setSelectedMovie(null); }}
+              onClick={() => { setShowFAQPage(false); setShowLegalModal(false); setShowPrivacyModal(false); setShowFavoritesPage(false); setSelectedMovie(null); }}
               className="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity"
             >
               <div className="bg-white rounded-xl md:rounded-2xl p-1.5 md:p-2.5 shadow-2xl transform -rotate-6">
@@ -611,21 +666,33 @@ export default function App() {
             {/* Navigation */}
             <nav className="flex items-center gap-1.5 md:gap-3">
               <button
-                onClick={() => { setShowFAQPage(true); setShowLegalModal(false); setShowPrivacyModal(false); }}
+                onClick={() => { setShowFavoritesPage(true); setShowFAQPage(false); setShowLegalModal(false); setShowPrivacyModal(false); }}
+                className="bg-pink-500 hover:bg-pink-400 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm transition-all flex items-center gap-1 relative"
+              >
+                <Heart className="w-4 h-4 md:w-5 md:h-5" fill={favorites.length > 0 ? "currentColor" : "none"} />
+                <span className="hidden sm:inline">Favoris</span>
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-white text-pink-500 text-xs font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => { setShowFAQPage(true); setShowLegalModal(false); setShowPrivacyModal(false); setShowFavoritesPage(false); }}
                 className="bg-yellow-500 hover:bg-yellow-400 text-black px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm transition-all flex items-center gap-1"
               >
                 <span className="text-sm md:text-base">❓</span>
                 <span className="hidden sm:inline">FAQ</span>
               </button>
               <button
-                onClick={() => { setShowLegalModal(true); setShowFAQPage(false); setShowPrivacyModal(false); }}
+                onClick={() => { setShowLegalModal(true); setShowFAQPage(false); setShowPrivacyModal(false); setShowFavoritesPage(false); }}
                 className="bg-white/10 hover:bg-white/20 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-medium text-xs md:text-sm transition-all"
               >
                 <span className="md:hidden">📜</span>
                 <span className="hidden md:inline">📜 Mentions légales</span>
               </button>
               <button
-                onClick={() => { setShowPrivacyModal(true); setShowFAQPage(false); setShowLegalModal(false); }}
+                onClick={() => { setShowPrivacyModal(true); setShowFAQPage(false); setShowLegalModal(false); setShowFavoritesPage(false); }}
                 className="bg-white/10 hover:bg-white/20 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-medium text-xs md:text-sm transition-all"
               >
                 <span className="md:hidden">🔒</span>
@@ -780,6 +847,27 @@ export default function App() {
                             )}
                           </p>
                         </div>
+                        {/* Favorite Button */}
+                        <button
+                          onClick={(e) => toggleFavorite({
+                            id: movie.tmdb_id,
+                            media_type: movie.media_type || 'movie',
+                            title: movie.title,
+                            poster_path: movie.poster,
+                            vote_average: movie.vote_average,
+                            release_date: movie.year
+                          }, e)}
+                          className={`p-2 rounded-full transition-all ${
+                            isFavorite({ id: movie.tmdb_id, media_type: movie.media_type || 'movie' })
+                              ? 'bg-pink-100 text-pink-500'
+                              : 'bg-gray-100 text-gray-400 hover:bg-pink-50 hover:text-pink-400'
+                          }`}
+                        >
+                          <Heart 
+                            className="w-5 h-5" 
+                            fill={isFavorite({ id: movie.tmdb_id, media_type: movie.media_type || 'movie' }) ? "currentColor" : "none"} 
+                          />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -970,9 +1058,31 @@ export default function App() {
                             </span>
                           </div>
 
+                          {/* Favorite button */}
+                          <button
+                            onClick={(e) => toggleFavorite({
+                              id: item.tmdb_id,
+                              media_type: item.media_type || 'movie',
+                              title: item.title,
+                              poster_path: item.poster,
+                              vote_average: item.vote_average,
+                              release_date: item.year
+                            }, e)}
+                            className={`absolute top-2 right-2 p-1.5 rounded-full transition-all shadow-lg ${
+                              isFavorite({ id: item.tmdb_id, media_type: item.media_type || 'movie' })
+                                ? 'bg-pink-500 text-white'
+                                : 'bg-black/50 text-white hover:bg-pink-500'
+                            }`}
+                          >
+                            <Heart 
+                              className="w-4 h-4" 
+                              fill={isFavorite({ id: item.tmdb_id, media_type: item.media_type || 'movie' }) ? "currentColor" : "none"} 
+                            />
+                          </button>
+
                           {/* Rating badge */}
                           {item.vote_average > 0 && (
-                            <div className="absolute top-2 right-2">
+                            <div className="absolute bottom-2 right-2">
                               <span className="text-xs px-2 py-1 rounded font-bold bg-black/70 text-yellow-400 shadow-lg">
                                 ⭐ {item.vote_average.toFixed(1)}
                               </span>
@@ -1113,13 +1223,38 @@ export default function App() {
               
               {/* Content */}
               <div className="relative z-10 px-6 md:px-12 py-12 md:py-16">
-                <button
-                  onClick={goBack}
-                  className="flex items-center gap-2 text-white/90 hover:text-white mb-8 transition-colors font-medium group"
-                >
-                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  Nouvelle recherche
-                </button>
+                <div className="flex items-center justify-between mb-8">
+                  <button
+                    onClick={goBack}
+                    className="flex items-center gap-2 text-white/90 hover:text-white transition-colors font-medium group"
+                  >
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    Nouvelle recherche
+                  </button>
+                  
+                  {/* Favorite Button */}
+                  <button
+                    onClick={(e) => toggleFavorite({
+                      id: selectedMovie.tmdb_id,
+                      media_type: selectedMovie.media_type || 'movie',
+                      title: selectedMovie.title,
+                      poster_path: selectedMovie.poster,
+                      vote_average: selectedMovie.vote_average,
+                      release_date: selectedMovie.year
+                    }, e)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all ${
+                      isFavorite({ id: selectedMovie.tmdb_id, media_type: selectedMovie.media_type || 'movie' })
+                        ? 'bg-pink-500 text-white'
+                        : 'bg-white/20 text-white hover:bg-pink-500'
+                    }`}
+                  >
+                    <Heart 
+                      className="w-5 h-5" 
+                      fill={isFavorite({ id: selectedMovie.tmdb_id, media_type: selectedMovie.media_type || 'movie' }) ? "currentColor" : "none"} 
+                    />
+                    {isFavorite({ id: selectedMovie.tmdb_id, media_type: selectedMovie.media_type || 'movie' }) ? 'Dans mes favoris' : 'Ajouter aux favoris'}
+                  </button>
+                </div>
 
                 <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
                   {/* Poster */}
@@ -1955,6 +2090,160 @@ export default function App() {
                 </p>
               </section>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Favorites Page */}
+      {showFavoritesPage && (
+        <div className="fixed inset-0 z-50 bg-gray-950 overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 bg-gray-900 border-b border-gray-800 z-10">
+            <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-pink-500 p-2 rounded-xl">
+                  <Heart className="w-6 h-6 text-white" fill="currentColor" />
+                </div>
+                <h1 className="text-xl font-bold text-white">Mes Favoris ({favorites.length})</h1>
+              </div>
+              <button 
+                onClick={() => setShowFavoritesPage(false)}
+                className="flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour
+              </button>
+            </div>
+          </div>
+
+          {/* Favorites Content */}
+          <div className="max-w-5xl mx-auto px-4 py-8">
+            {favorites.length === 0 ? (
+              <div className="text-center py-20">
+                <Heart className="w-20 h-20 text-gray-700 mx-auto mb-6" />
+                <h2 className="text-2xl font-bold text-white mb-3">Aucun favori pour le moment</h2>
+                <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                  Ajoutez des films et séries à vos favoris en cliquant sur le cœur ♡ pour les retrouver facilement ici.
+                </p>
+                <button
+                  onClick={() => setShowFavoritesPage(false)}
+                  className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-bold transition-all"
+                >
+                  Explorer les films
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="text-gray-400">
+                    Cliquez sur un film pour voir où le regarder en VF/VOSTFR
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (confirm('Supprimer tous les favoris ?')) {
+                        setFavorites([]);
+                      }
+                    }}
+                    className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+                  >
+                    Tout supprimer
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {favorites.map((item) => (
+                    <div
+                      key={`${item.media_type}-${item.id}`}
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative overflow-hidden rounded-xl shadow-lg transition-all group-hover:scale-105 group-hover:shadow-2xl">
+                        {item.poster_path ? (
+                          <img
+                            src={item.poster_path}
+                            alt={item.title}
+                            className="w-full aspect-[2/3] object-cover"
+                            onClick={() => {
+                              setShowFavoritesPage(false);
+                              selectMovie({
+                                tmdb_id: item.id,
+                                title: item.title,
+                                poster: item.poster_path,
+                                media_type: item.media_type,
+                                year: item.release_date
+                              });
+                            }}
+                          />
+                        ) : (
+                          <div 
+                            className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center"
+                            onClick={() => {
+                              setShowFavoritesPage(false);
+                              selectMovie({
+                                tmdb_id: item.id,
+                                title: item.title,
+                                poster: item.poster_path,
+                                media_type: item.media_type,
+                                year: item.release_date
+                              });
+                            }}
+                          >
+                            <Film className="w-12 h-12 text-gray-500" />
+                          </div>
+                        )}
+
+                        {/* Badge type */}
+                        <div className="absolute top-2 left-2">
+                          <span className={`text-xs px-2 py-1 rounded font-bold ${
+                            item.media_type === 'tv' ? 'bg-purple-600' : 'bg-blue-600'
+                          } text-white shadow-lg`}>
+                            {item.media_type === 'tv' ? '📺' : '🎬'}
+                          </span>
+                        </div>
+
+                        {/* Remove favorite button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromFavorites(item);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-pink-500 text-white hover:bg-red-500 transition-all shadow-lg"
+                        >
+                          <Heart className="w-4 h-4" fill="currentColor" />
+                        </button>
+
+                        {/* Rating badge */}
+                        {item.vote_average > 0 && (
+                          <div className="absolute bottom-2 right-2">
+                            <span className="text-xs px-2 py-1 rounded font-bold bg-black/70 text-yellow-400 shadow-lg">
+                              ⭐ {item.vote_average?.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <p className="text-white font-bold text-sm truncate">{item.title}</p>
+                            <p className="text-gray-300 text-xs">{item.release_date}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-white font-medium text-sm truncate">{item.title}</p>
+                      <p className="text-gray-400 text-xs">{item.release_date}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Info */}
+                <div className="mt-8 bg-gray-900 rounded-xl p-4 border border-gray-800">
+                  <p className="text-gray-400 text-sm text-center">
+                    💡 Vos favoris sont sauvegardés localement dans votre navigateur. Ils ne seront pas synchronisés entre vos appareils.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
