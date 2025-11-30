@@ -1183,24 +1183,24 @@ export default function App() {
                                       )}
                                     </div>
 
-                                    {avail.streaming_url && (
-                                      <a
-                                        href={avail.streaming_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`block text-center ${
-                                          avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
-                                        } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
-                                      >
-                                        {avail.streaming_type === 'rent' ? '🎬 Louer' :
-                                         avail.streaming_type === 'buy' ? '💰 Acheter' :
-                                         avail.streaming_type === 'addon' && avail.addon_name ? `💳 S'abonner à ${avail.addon_name}` :
-                                         avail.streaming_type === 'addon' ? `📡 Chaîne payante` :
-                                         avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
-                                         `▶ Voir sur ${avail.platform}`
-                                        )} 
-                                      </a>
-                                    )}
+                                   {avail.streaming_url && (
+  <a
+    href={avail.streaming_url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`block text-center ${
+      avail.streaming_type === 'addon' ? 'bg-blue-600' : getPlatformStyle(avail.platform).bg
+    } hover:opacity-90 text-white py-2 rounded-lg text-sm font-black transition-all hover:scale-105 shadow-lg`}
+  >
+    {avail.streaming_type === 'rent' ? '🎬 Louer' :
+     avail.streaming_type === 'buy' ? '💰 Acheter' :
+     avail.streaming_type === 'addon' && avail.addon_name ? `💳 S'abonner à ${avail.addon_name}` :
+     avail.streaming_type === 'addon' ? `📡 Chaîne payante` :
+     avail.streaming_type === 'free' ? `🆓 Voir sur ${avail.platform}` :
+     `▶ Voir sur ${avail.platform}`
+    }
+  </a>
+)}
                                   </div>
                                 ))}
                               </div>
