@@ -1261,6 +1261,7 @@ export default function App() {
                 </div>
               </div>
             )}
+        )}
       </main>
 
       {/* Footer */}
