@@ -51,6 +51,16 @@ export default function App() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSPrompt, setShowIOSPrompt] = useState(false);
+  
+  // Discover section states
+  const [discoverTab, setDiscoverTab] = useState('trending'); // 'trending' or 'discover'
+  const [discoverResults, setDiscoverResults] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [discoverType, setDiscoverType] = useState('movie'); // 'movie' or 'tv'
+  const [discoverGenre, setDiscoverGenre] = useState('');
+  const [discoverYear, setDiscoverYear] = useState('');
+  const [discoverSort, setDiscoverSort] = useState('popularity');
+  const [loadingDiscover, setLoadingDiscover] = useState(false);
 
   // Detect iOS
   useEffect(() => {
@@ -103,6 +113,50 @@ export default function App() {
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Load genres on mount
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/genres`);
+        const data = await response.json();
+        setGenres(data.genres || []);
+      } catch (err) {
+        console.error('Error loading genres:', err);
+      }
+    };
+    loadGenres();
+  }, []);
+
+  // Load discover/trending content
+  useEffect(() => {
+    const loadDiscoverContent = async () => {
+      setLoadingDiscover(true);
+      try {
+        let url;
+        if (discoverTab === 'trending') {
+          url = `${API_URL}/api/trending?type=${discoverType}&time=week`;
+        } else {
+          const params = new URLSearchParams({
+            type: discoverType,
+            sort: discoverSort
+          });
+          if (discoverGenre) params.append('genre', discoverGenre);
+          if (discoverYear) params.append('year', discoverYear);
+          url = `${API_URL}/api/discover?${params.toString()}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        setDiscoverResults(data.results || []);
+      } catch (err) {
+        console.error('Error loading discover content:', err);
+      } finally {
+        setLoadingDiscover(false);
+      }
+    };
+    loadDiscoverContent();
+  }, [discoverTab, discoverType, discoverGenre, discoverYear, discoverSort]);
 
   const searchMovies = async (query) => {
     setLoading(true);
@@ -651,6 +705,165 @@ export default function App() {
                 </div>
               )}
             </div>
+
+            {/* Discover Section - Only show when no search results */}
+            {searchResults.length === 0 && !searchQuery && (
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-700 shadow-2xl">
+                {/* Tabs */}
+                <div className="flex gap-4 mb-6">
+                  <button
+                    onClick={() => setDiscoverTab('trending')}
+                    className={`px-6 py-3 rounded-xl font-bold text-lg transition-all ${
+                      discoverTab === 'trending'
+                        ? 'bg-red-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    🔥 Tendances
+                  </button>
+                  <button
+                    onClick={() => setDiscoverTab('discover')}
+                    className={`px-6 py-3 rounded-xl font-bold text-lg transition-all ${
+                      discoverTab === 'discover'
+                        ? 'bg-red-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    🎬 Explorer
+                  </button>
+                </div>
+
+                {/* Filters */}
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {/* Type Filter */}
+                  <select
+                    value={discoverType}
+                    onChange={(e) => setDiscoverType(e.target.value)}
+                    className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="movie">🎬 Films</option>
+                    <option value="tv">📺 Séries</option>
+                  </select>
+
+                  {/* Genre Filter */}
+                  {discoverTab === 'discover' && (
+                    <select
+                      value={discoverGenre}
+                      onChange={(e) => setDiscoverGenre(e.target.value)}
+                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="">Tous les genres</option>
+                      {genres.map(genre => (
+                        <option key={genre.id} value={genre.id}>{genre.name}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* Year Filter */}
+                  {discoverTab === 'discover' && (
+                    <select
+                      value={discoverYear}
+                      onChange={(e) => setDiscoverYear(e.target.value)}
+                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="">Toutes les années</option>
+                      {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* Sort Filter */}
+                  {discoverTab === 'discover' && (
+                    <select
+                      value={discoverSort}
+                      onChange={(e) => setDiscoverSort(e.target.value)}
+                      className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="popularity">📈 Popularité</option>
+                      <option value="vote_average">⭐ Note</option>
+                      <option value="release_date">📅 Date de sortie</option>
+                    </select>
+                  )}
+                </div>
+
+                {/* Results Grid */}
+                {loadingDiscover ? (
+                  <div className="text-center py-12">
+                    <Loader className="w-10 h-10 animate-spin text-red-500 mx-auto mb-4" />
+                    <p className="text-gray-400">Chargement...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {discoverResults.map((item) => (
+                      <div
+                        key={item.tmdb_id}
+                        onClick={() => selectMovie(item)}
+                        className="cursor-pointer group"
+                      >
+                        <div className="relative overflow-hidden rounded-xl shadow-lg transition-all group-hover:scale-105 group-hover:shadow-2xl">
+                          {item.poster ? (
+                            <img
+                              src={item.poster}
+                              alt={item.title}
+                              className="w-full aspect-[2/3] object-cover"
+                            />
+                          ) : (
+                            <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                              <Film className="w-12 h-12 text-gray-500" />
+                            </div>
+                          )}
+                          
+                          {/* Overlay with info */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="text-white font-bold text-sm truncate">{item.title}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-xs px-1.5 py-0.5 rounded font-bold ${
+                                  item.media_type === 'tv' ? 'bg-purple-600' : 'bg-blue-600'
+                                } text-white`}>
+                                  {item.media_type === 'tv' ? 'SÉRIE' : 'FILM'}
+                                </span>
+                                {item.year && <span className="text-gray-300 text-xs">{item.year}</span>}
+                                {item.vote_average > 0 && (
+                                  <span className="text-yellow-400 text-xs">⭐ {item.vote_average.toFixed(1)}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Badge type always visible */}
+                          <div className="absolute top-2 left-2">
+                            <span className={`text-xs px-2 py-1 rounded font-bold ${
+                              item.media_type === 'tv' ? 'bg-purple-600' : 'bg-blue-600'
+                            } text-white shadow-lg`}>
+                              {item.media_type === 'tv' ? '📺' : '🎬'}
+                            </span>
+                          </div>
+
+                          {/* Rating badge */}
+                          {item.vote_average > 0 && (
+                            <div className="absolute top-2 right-2">
+                              <span className="text-xs px-2 py-1 rounded font-bold bg-black/70 text-yellow-400 shadow-lg">
+                                ⭐ {item.vote_average.toFixed(1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="mt-2 text-white font-medium text-sm truncate">{item.title}</p>
+                        <p className="text-gray-400 text-xs">{item.year}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {discoverResults.length === 0 && !loadingDiscover && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400 text-lg">Aucun résultat trouvé</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* VPN Section */}
             <div className="bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-10 text-center shadow-2xl border border-red-500">
