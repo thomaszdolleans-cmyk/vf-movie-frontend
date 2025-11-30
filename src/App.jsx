@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle } from 'lucide-react';
+import { Search, Film, Globe, CheckCircle, XCircle, Loader, ArrowLeft, Tv, Shield, Zap, AlertCircle, ChevronDown } from 'lucide-react';
 
 const API_URL = 'https://vf-movie-backend.onrender.com';
 
@@ -64,6 +64,7 @@ export default function App() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showFAQPage, setShowFAQPage] = useState(false);
 
   // Get share URL and text
   const getShareData = () => {
@@ -588,27 +589,55 @@ export default function App() {
       {/* Header */}
       <header className="bg-gradient-to-r from-red-600 to-red-700 shadow-2xl relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 relative z-10">
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              {/* Logo stylé */}
-              <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
-                <div className="bg-white rounded-xl md:rounded-2xl p-2 md:p-4 shadow-2xl transform -rotate-6">
-                  <Film className="w-6 h-6 md:w-12 md:h-12 text-red-600" />
-                </div>
-                <div className="text-left">
-                  <div className="flex items-baseline gap-1 md:gap-2">
-                    <span className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter">VF</span>
-                    <span className="text-xl md:text-3xl lg:text-4xl font-bold text-white/90">Movie</span>
-                  </div>
-                  <div className="text-base md:text-2xl lg:text-3xl font-black text-red-200 -mt-1 md:-mt-2">FINDER</div>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-5 relative z-10">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo - Clickable to return home */}
+            <button
+              onClick={() => { setShowFAQPage(false); setShowLegalModal(false); setShowPrivacyModal(false); setSelectedMovie(null); }}
+              className="flex items-center gap-2 md:gap-3 hover:opacity-90 transition-opacity"
+            >
+              <div className="bg-white rounded-xl md:rounded-2xl p-1.5 md:p-2.5 shadow-2xl transform -rotate-6">
+                <Film className="w-5 h-5 md:w-8 md:h-8 text-red-600" />
               </div>
-              <p className="text-red-100 text-xs md:text-base lg:text-lg font-semibold">
-                🌍 Films & Séries en français · Partout dans le monde
-              </p>
-            </div>
+              <div className="text-left">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl md:text-3xl font-black text-white tracking-tighter">VF</span>
+                  <span className="text-base md:text-xl font-bold text-white/90">Movie</span>
+                </div>
+                <div className="text-xs md:text-base font-black text-red-200 -mt-0.5">FINDER</div>
+              </div>
+            </button>
+
+            {/* Navigation */}
+            <nav className="flex items-center gap-1.5 md:gap-3">
+              <button
+                onClick={() => { setShowFAQPage(true); setShowLegalModal(false); setShowPrivacyModal(false); }}
+                className="bg-yellow-500 hover:bg-yellow-400 text-black px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm transition-all flex items-center gap-1"
+              >
+                <span className="text-sm md:text-base">❓</span>
+                <span className="hidden sm:inline">FAQ</span>
+              </button>
+              <button
+                onClick={() => { setShowLegalModal(true); setShowFAQPage(false); setShowPrivacyModal(false); }}
+                className="bg-white/10 hover:bg-white/20 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-medium text-xs md:text-sm transition-all"
+              >
+                <span className="md:hidden">📜</span>
+                <span className="hidden md:inline">📜 Mentions légales</span>
+              </button>
+              <button
+                onClick={() => { setShowPrivacyModal(true); setShowFAQPage(false); setShowLegalModal(false); }}
+                className="bg-white/10 hover:bg-white/20 text-white px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-medium text-xs md:text-sm transition-all"
+              >
+                <span className="md:hidden">🔒</span>
+                <span className="hidden md:inline">🔒 Confidentialité</span>
+              </button>
+            </nav>
           </div>
+          
+          {/* Tagline - Hidden on mobile when space is tight */}
+          <p className="text-red-100 text-xs md:text-sm font-medium text-center mt-2 md:mt-3 hidden sm:block">
+            🌍 Films & Séries en français · Partout dans le monde
+          </p>
         </div>
       </header>
 
@@ -1695,6 +1724,13 @@ export default function App() {
               >
                 Politique de confidentialité
               </button>
+              <span className="text-gray-700">•</span>
+              <button 
+                onClick={() => setShowFAQPage(true)}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                FAQ
+              </button>
             </div>
 
             {/* Copyright */}
@@ -1919,6 +1955,512 @@ export default function App() {
                 </p>
               </section>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* FAQ Page - Full page SEO optimized */}
+      {showFAQPage && (
+        <div className="fixed inset-0 z-50 bg-gray-950 overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 bg-gray-900 border-b border-gray-800 z-10">
+            <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-red-600 p-2 rounded-xl">
+                  <Film className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-xl font-bold text-white">FAQ - Questions Fréquentes</h1>
+              </div>
+              <button 
+                onClick={() => setShowFAQPage(false)}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour
+              </button>
+            </div>
+          </div>
+
+          {/* FAQ Content */}
+          <div className="max-w-5xl mx-auto px-4 py-8">
+            {/* Hero Section */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
+                ❓ Foire Aux Questions
+              </h1>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Tout ce que vous devez savoir pour <strong className="text-white">regarder des films et séries en VF</strong> où que vous soyez dans le monde
+              </p>
+            </div>
+
+            {/* FAQ Categories */}
+            <div className="space-y-8">
+              
+              {/* Category 1: General */}
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    🎬 À propos de VF Movie Finder
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-800">
+                  
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Comment fonctionne VF Movie Finder ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>VF Movie Finder</strong> est un moteur de recherche gratuit qui vous permet de trouver 
+                        <strong> où regarder vos films et séries préférés en version française (VF) ou en version originale sous-titrée français (VOSTFR)</strong>.
+                      </p>
+                      <p className="mb-3">
+                        Notre outil analyse en temps réel les catalogues des principales <strong>plateformes de streaming</strong> comme 
+                        Netflix, Amazon Prime Video, Disney+, Apple TV+, Canal+, et bien d'autres, dans plus de 60 pays.
+                      </p>
+                      <p>
+                        Il vous suffit de rechercher un film ou une série, et nous vous indiquons <strong>dans quels pays et sur quelles plateformes</strong> 
+                        le contenu est disponible avec <strong>audio français ou sous-titres français</strong>.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">D'où proviennent les informations de disponibilité ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Nous utilisons deux sources de données fiables et mises à jour régulièrement :
+                      </p>
+                      <ul className="list-disc list-inside space-y-2 mb-3">
+                        <li><strong>The Movie Database (TMDB)</strong> - Pour les informations sur les films et séries (titres, affiches, synopsis, casting)</li>
+                        <li><strong>Streaming Availability API</strong> - Pour les données de disponibilité en temps réel sur les plateformes de streaming</li>
+                      </ul>
+                      <p>
+                        Ces données sont actualisées quotidiennement pour vous fournir les informations les plus précises possibles.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">VF Movie Finder est-il gratuit ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>Oui, VF Movie Finder est 100% gratuit !</strong> Vous pouvez rechercher autant de films et séries 
+                        que vous le souhaitez, sans inscription et sans aucune limite.
+                      </p>
+                      <p>
+                        Notre site est financé par des partenariats avec des services VPN de confiance. Si vous décidez d'utiliser 
+                        un VPN via nos liens, nous recevons une petite commission qui nous aide à maintenir le service gratuit.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Que signifie VF et VOSTFR ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>VF (Version Française)</strong> signifie que le film ou la série est doublé en français. 
+                        Les dialogues sont entièrement en français, idéal pour ceux qui préfèrent ne pas lire de sous-titres.
+                      </p>
+                      <p className="mb-3">
+                        <strong>VOSTFR (Version Originale Sous-Titrée Français)</strong> signifie que le contenu est dans sa langue originale 
+                        (anglais, espagnol, coréen, etc.) avec des sous-titres en français. Parfait pour les puristes qui veulent 
+                        entendre les voix originales des acteurs.
+                      </p>
+                      <p>
+                        Sur VF Movie Finder, vous pouvez <strong>filtrer les résultats</strong> pour afficher uniquement les pays 
+                        où le contenu est disponible en VF, en VOSTFR, ou les deux.
+                      </p>
+                    </div>
+                  </details>
+
+                </div>
+              </div>
+
+              {/* Category 2: Expats & Travelers */}
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    🌍 Pour les expatriés et voyageurs francophones
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-800">
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Je vis à l'étranger, comment regarder des films en français ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>Vous êtes expatrié au Canada, aux États-Unis, en Australie, au Japon ou ailleurs ?</strong> 
+                        Vous avez sûrement remarqué que les films en version française sont rares sur Netflix et les autres plateformes locales.
+                      </p>
+                      <p className="mb-3">
+                        Avec VF Movie Finder, vous pouvez :
+                      </p>
+                      <ol className="list-decimal list-inside space-y-2 mb-3">
+                        <li>Rechercher le film ou la série que vous voulez regarder</li>
+                        <li>Voir dans quels pays il est disponible en VF ou VOSTFR</li>
+                        <li>Utiliser un VPN pour accéder au catalogue de ce pays</li>
+                        <li>Profiter de vos contenus préférés en français !</li>
+                      </ol>
+                      <p>
+                        C'est la solution utilisée par <strong>des millions de francophones dans le monde</strong> pour ne pas perdre 
+                        leur connexion avec le contenu francophone.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Comment accéder au catalogue Netflix France depuis l'étranger ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Pour <strong>accéder au catalogue Netflix France</strong> (ou de n'importe quel autre pays) depuis l'étranger, 
+                        vous avez besoin d'un <strong>VPN (Virtual Private Network)</strong>.
+                      </p>
+                      <p className="mb-3">
+                        Un VPN vous permet de changer virtuellement votre localisation. Par exemple, si vous êtes au Canada 
+                        et que vous vous connectez à un serveur VPN en France, Netflix pensera que vous êtes en France et 
+                        vous affichera le <strong>catalogue français avec tous les films et séries en VF</strong>.
+                      </p>
+                      <p>
+                        Nous recommandons des VPN fiables comme <strong>NordVPN, ExpressVPN, Surfshark ou CyberGhost</strong> 
+                        qui fonctionnent parfaitement avec Netflix et toutes les plateformes de streaming.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Quel pays a le meilleur catalogue Netflix en français ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Les pays avec les <strong>meilleurs catalogues de contenus en français</strong> sont généralement :
+                      </p>
+                      <ul className="list-disc list-inside space-y-2 mb-3">
+                        <li><strong>🇫🇷 France</strong> - Le plus grand catalogue de films et séries en VF</li>
+                        <li><strong>🇧🇪 Belgique</strong> - Excellent catalogue francophone, souvent identique à la France</li>
+                        <li><strong>🇨🇭 Suisse</strong> - Bon catalogue multilingue incluant le français</li>
+                        <li><strong>🇨🇦 Canada</strong> - Catalogue bilingue avec beaucoup de contenu en VF</li>
+                        <li><strong>🇱🇺 Luxembourg</strong> - Petit pays mais catalogue francophone complet</li>
+                      </ul>
+                      <p>
+                        Utilisez VF Movie Finder pour <strong>comparer les catalogues</strong> et trouver où votre film préféré 
+                        est disponible en français !
+                      </p>
+                    </div>
+                  </details>
+
+                </div>
+              </div>
+
+              {/* Category 3: VPN */}
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    🔐 VPN et accès aux catalogues
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-800">
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Qu'est-ce qu'un VPN et comment ça marche ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Un <strong>VPN (Virtual Private Network)</strong> est un outil qui crée une connexion sécurisée et chiffrée 
+                        entre votre appareil et internet. Il masque votre adresse IP réelle et vous en attribue une nouvelle 
+                        basée sur la localisation du serveur que vous choisissez.
+                      </p>
+                      <p className="mb-3">
+                        <strong>Exemple concret :</strong> Vous êtes à Tokyo et vous voulez regarder un film en VF sur Netflix France. 
+                        Vous activez votre VPN, vous sélectionnez un serveur en France, et voilà ! Netflix pense que vous êtes en France 
+                        et vous donne accès au catalogue français.
+                      </p>
+                      <p>
+                        En plus de l'accès aux contenus géo-restreints, un VPN <strong>protège votre vie privée</strong> et 
+                        <strong> sécurise vos données</strong> sur les réseaux Wi-Fi publics.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Est-ce légal d'utiliser un VPN pour le streaming ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>Oui, l'utilisation d'un VPN est totalement légale</strong> dans la grande majorité des pays du monde, 
+                        y compris en France, en Europe, aux États-Unis, au Canada, en Australie, au Japon, etc.
+                      </p>
+                      <p className="mb-3">
+                        <strong>Des millions de personnes</strong> utilisent quotidiennement un VPN pour :
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 mb-3">
+                        <li>Protéger leur vie privée en ligne</li>
+                        <li>Sécuriser leurs connexions sur les Wi-Fi publics</li>
+                        <li>Accéder à leurs contenus préférés en voyage</li>
+                        <li>Contourner la censure dans certains pays</li>
+                      </ul>
+                      <p>
+                        Les VPN sont des outils légitimes utilisés aussi bien par les particuliers que par les entreprises 
+                        pour leur sécurité informatique.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Quel VPN choisir pour regarder Netflix, Disney+ et Prime Video ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Tous les VPN ne fonctionnent pas avec les plateformes de streaming. Nous recommandons ces 
+                        <strong> VPN testés et approuvés</strong> qui fonctionnent parfaitement avec Netflix, Disney+, 
+                        Amazon Prime Video, et autres :
+                      </p>
+                      <div className="space-y-3 mb-3">
+                        <div className="bg-gray-800 p-3 rounded-lg">
+                          <p className="font-bold text-white">🥇 NordVPN - Le plus populaire</p>
+                          <p className="text-sm">Plus de 5000 serveurs dans 60 pays, vitesse excellente, fonctionne avec toutes les plateformes</p>
+                        </div>
+                        <div className="bg-gray-800 p-3 rounded-lg">
+                          <p className="font-bold text-white">🥈 ExpressVPN - Le plus rapide</p>
+                          <p className="text-sm">Vitesses ultra-rapides, parfait pour le streaming 4K, interface très simple</p>
+                        </div>
+                        <div className="bg-gray-800 p-3 rounded-lg">
+                          <p className="font-bold text-white">🥉 Surfshark - Le meilleur rapport qualité/prix</p>
+                          <p className="text-sm">Appareils illimités, prix attractif, excellent pour les familles</p>
+                        </div>
+                        <div className="bg-gray-800 p-3 rounded-lg">
+                          <p className="font-bold text-white">🏅 CyberGhost - Le plus simple</p>
+                          <p className="text-sm">Serveurs optimisés pour le streaming, interface intuitive, idéal pour les débutants</p>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Un VPN va-t-il ralentir ma connexion ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Les VPN premium comme NordVPN, ExpressVPN et Surfshark sont optimisés pour le streaming et 
+                        ont un <strong>impact minimal sur votre vitesse de connexion</strong>.
+                      </p>
+                      <p className="mb-3">
+                        Avec une bonne connexion internet, vous pouvez facilement :
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 mb-3">
+                        <li>Regarder en <strong>4K Ultra HD</strong> sans buffering</li>
+                        <li>Streamer sur plusieurs appareils simultanément</li>
+                        <li>Télécharger rapidement pour regarder hors-ligne</li>
+                      </ul>
+                      <p>
+                        <strong>Astuce :</strong> Choisissez un serveur proche de votre localisation réelle pour de meilleures performances. 
+                        Par exemple, si vous êtes au Canada et voulez accéder à Netflix France, choisissez un serveur à Paris plutôt qu'à Marseille.
+                      </p>
+                    </div>
+                  </details>
+
+                </div>
+              </div>
+
+              {/* Category 4: Technical */}
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    ⚙️ Questions techniques
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-800">
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Pourquoi un film affiché n'est plus disponible ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Les catalogues de streaming <strong>changent constamment</strong>. Les films et séries sont ajoutés 
+                        et retirés régulièrement en fonction des accords de licence entre les plateformes et les studios.
+                      </p>
+                      <p className="mb-3">
+                        Nos données sont mises à jour quotidiennement, mais il peut y avoir un léger décalage entre 
+                        le moment où un contenu est retiré et la mise à jour de notre base de données.
+                      </p>
+                      <p>
+                        Si vous constatez une erreur, n'hésitez pas à rafraîchir la recherche plus tard. 
+                        Le contenu peut aussi revenir sur la plateforme ultérieurement.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Quelles plateformes de streaming sont supportées ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        VF Movie Finder analyse les catalogues de <strong>toutes les principales plateformes de streaming</strong> :
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Netflix</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Amazon Prime</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Disney+</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Apple TV+</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Canal+</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">OCS</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Paramount+</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">HBO Max</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Hulu</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Peacock</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Crunchyroll</span>
+                        <span className="bg-gray-800 px-3 py-1 rounded text-center">Et plus...</span>
+                      </div>
+                      <p>
+                        Nous couvrons plus de <strong>60 pays</strong> et <strong>200+ services de streaming</strong>.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Puis-je utiliser VF Movie Finder sur mobile ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>Oui, absolument !</strong> VF Movie Finder est entièrement responsive et fonctionne parfaitement 
+                        sur smartphone et tablette (iOS et Android).
+                      </p>
+                      <p className="mb-3">
+                        Vous pouvez même <strong>installer l'application</strong> sur votre écran d'accueil :
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 mb-3">
+                        <li><strong>Sur iPhone/iPad :</strong> Appuyez sur le bouton partage puis "Ajouter à l'écran d'accueil"</li>
+                        <li><strong>Sur Android :</strong> Appuyez sur les 3 points du navigateur puis "Installer l'application"</li>
+                      </ul>
+                      <p>
+                        L'application fonctionne ensuite comme une app native, avec un accès rapide depuis votre écran d'accueil.
+                      </p>
+                    </div>
+                  </details>
+
+                </div>
+              </div>
+
+              {/* Category 5: Streaming Platforms */}
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    📺 Plateformes de streaming
+                  </h2>
+                </div>
+                <div className="divide-y divide-gray-800">
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Pourquoi le catalogue Netflix est différent selon les pays ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        Chaque pays a un <strong>catalogue Netflix différent</strong> en raison des droits de diffusion. 
+                        Les studios vendent les droits de leurs films et séries pays par pays, ce qui crée des 
+                        catalogues uniques partout dans le monde.
+                      </p>
+                      <p className="mb-3">
+                        Par exemple :
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 mb-3">
+                        <li>Un film peut être sur Netflix en France mais sur Disney+ aux États-Unis</li>
+                        <li>Une série peut avoir la VF disponible uniquement en Belgique et au Canada</li>
+                        <li>Certains contenus sont exclusifs à certaines régions</li>
+                      </ul>
+                      <p>
+                        C'est précisément pourquoi <strong>VF Movie Finder existe</strong> : pour vous aider à trouver 
+                        où vos contenus préférés sont disponibles en français !
+                      </p>
+                    </div>
+                  </details>
+
+                  <details className="group">
+                    <summary className="px-6 py-4 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center justify-between">
+                      <h3 className="text-white font-medium">Dois-je avoir un abonnement dans chaque pays ?</h3>
+                      <ChevronDown className="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="px-6 pb-4 text-gray-300 text-sm leading-relaxed">
+                      <p className="mb-3">
+                        <strong>Non !</strong> Un seul abonnement Netflix (ou autre plateforme) suffit. Votre abonnement 
+                        fonctionne dans tous les pays, c'est simplement le catalogue qui change selon votre localisation.
+                      </p>
+                      <p className="mb-3">
+                        Quand vous utilisez un VPN pour vous connecter à un serveur en France par exemple, Netflix détecte 
+                        que vous êtes "en France" et vous affiche automatiquement le catalogue français.
+                      </p>
+                      <p>
+                        Vous gardez votre abonnement, vos profils, votre historique - seul le catalogue affiché change.
+                      </p>
+                    </div>
+                  </details>
+
+                </div>
+              </div>
+
+            </div>
+
+            {/* CTA Section */}
+            <div className="mt-12 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl p-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                🎬 Prêt à trouver votre prochain film en VF ?
+              </h2>
+              <p className="text-red-100 mb-6 max-w-2xl mx-auto">
+                Recherchez parmi des milliers de films et séries disponibles en version française dans le monde entier
+              </p>
+              <button
+                onClick={() => setShowFAQPage(false)}
+                className="bg-white text-red-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-red-50 transition-all hover:scale-105 shadow-lg"
+              >
+                Commencer ma recherche →
+              </button>
+            </div>
+
+            {/* SEO Footer Text */}
+            <div className="mt-12 text-center text-gray-500 text-sm max-w-4xl mx-auto">
+              <p>
+                VF Movie Finder - Votre guide pour <strong>regarder des films en français à l'étranger</strong>. 
+                Trouvez où sont disponibles vos <strong>films et séries en VF</strong> sur Netflix, Disney+, Amazon Prime Video 
+                et toutes les plateformes de streaming. La solution pour les <strong>expatriés francophones</strong>, 
+                les voyageurs et tous ceux qui veulent <strong>accéder au catalogue Netflix France</strong> depuis n'importe où dans le monde.
+              </p>
+            </div>
+
           </div>
         </div>
       )}
