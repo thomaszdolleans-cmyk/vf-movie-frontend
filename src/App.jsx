@@ -704,13 +704,15 @@ export default function App() {
               <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 rounded-2xl p-4 md:p-6 border border-purple-500/30 shadow-xl mb-6">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-purple-400" />
+                    <div className="bg-purple-500/20 p-2 rounded-xl">
+                      <Shield className="w-8 h-8 text-purple-400" />
+                    </div>
                     <div>
                       <p className="text-white font-bold text-lg">🔓 Débloquez tous les catalogues</p>
                       <p className="text-purple-200 text-sm hidden md:block">Accédez aux contenus de n'importe quel pays avec un VPN</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-wrap justify-center">
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
                     {/* NordVPN */}
                     <a
                       href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=93849"
@@ -718,7 +720,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 bg-[#4687FF] hover:bg-[#3a75e0] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
                     >
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" alt="NordVPN" className="h-4 w-auto brightness-0 invert" />
+                      <img src="https://logo.clearbit.com/nordvpn.com" alt="NordVPN" className="h-5 w-5 rounded" />
                       NordVPN
                     </a>
                     {/* ExpressVPN */}
@@ -728,7 +730,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 bg-[#DA3940] hover:bg-[#c13138] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
                     >
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" alt="ExpressVPN" className="h-4 w-auto brightness-0 invert" />
+                      <img src="https://logo.clearbit.com/expressvpn.com" alt="ExpressVPN" className="h-5 w-5 rounded" />
                       ExpressVPN
                     </a>
                     {/* Surfshark */}
@@ -738,7 +740,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 bg-[#178BCC] hover:bg-[#1379b3] text-white px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
                     >
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" alt="Surfshark" className="h-4 w-auto brightness-0 invert" />
+                      <img src="https://logo.clearbit.com/surfshark.com" alt="Surfshark" className="h-5 w-5 rounded" />
                       Surfshark
                     </a>
                     {/* CyberGhost */}
@@ -748,7 +750,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 bg-[#FFCC00] hover:bg-[#e6b800] text-black px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 shadow-lg"
                     >
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" alt="CyberGhost" className="h-4 w-auto" />
+                      <img src="https://logo.clearbit.com/cyberghostvpn.com" alt="CyberGhost" className="h-5 w-5 rounded" />
                       CyberGhost
                     </a>
                   </div>
@@ -922,11 +924,7 @@ export default function App() {
                     className="group bg-gradient-to-br from-[#4687FF] to-[#3366CC] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
                   >
                     <div className="bg-white rounded-xl p-3 mb-3 inline-block">
-                      <img 
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" 
-                        alt="NordVPN" 
-                        className="h-6 md:h-8 w-auto mx-auto"
-                      />
+                      <img src="https://logo.clearbit.com/nordvpn.com" alt="NordVPN" className="h-8 md:h-10 w-8 md:w-10 mx-auto" />
                     </div>
                     <p className="text-white font-black text-lg md:text-xl">NordVPN</p>
                     <p className="text-blue-200 text-xs md:text-sm mt-1">⭐ #1 Mondial</p>
@@ -943,11 +941,7 @@ export default function App() {
                     className="group bg-gradient-to-br from-[#DA3940] to-[#B82E34] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
                   >
                     <div className="bg-white rounded-xl p-3 mb-3 inline-block">
-                      <img 
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" 
-                        alt="ExpressVPN" 
-                        className="h-6 md:h-8 w-auto mx-auto"
-                      />
+                      <img src="https://logo.clearbit.com/expressvpn.com" alt="ExpressVPN" className="h-8 md:h-10 w-8 md:w-10 mx-auto" />
                     </div>
                     <p className="text-white font-black text-lg md:text-xl">ExpressVPN</p>
                     <p className="text-red-200 text-xs md:text-sm mt-1">🚀 Ultra rapide</p>
@@ -964,11 +958,7 @@ export default function App() {
                     className="group bg-gradient-to-br from-[#178BCC] to-[#0E5C8A] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
                   >
                     <div className="bg-white rounded-xl p-3 mb-3 inline-block">
-                      <img 
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" 
-                        alt="Surfshark" 
-                        className="h-6 md:h-8 w-auto mx-auto"
-                      />
+                      <img src="https://logo.clearbit.com/surfshark.com" alt="Surfshark" className="h-8 md:h-10 w-8 md:w-10 mx-auto" />
                     </div>
                     <p className="text-white font-black text-lg md:text-xl">Surfshark</p>
                     <p className="text-cyan-200 text-xs md:text-sm mt-1">💰 Meilleur prix</p>
@@ -985,11 +975,7 @@ export default function App() {
                     className="group bg-gradient-to-br from-[#FFCC00] to-[#E6A800] p-4 md:p-6 rounded-2xl text-center hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
                   >
                     <div className="bg-white rounded-xl p-3 mb-3 inline-block">
-                      <img 
-                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" 
-                        alt="CyberGhost" 
-                        className="h-6 md:h-8 w-auto mx-auto"
-                      />
+                      <img src="https://logo.clearbit.com/cyberghostvpn.com" alt="CyberGhost" className="h-8 md:h-10 w-8 md:w-10 mx-auto" />
                     </div>
                     <p className="text-gray-900 font-black text-lg md:text-xl">CyberGhost</p>
                     <p className="text-yellow-800 text-xs md:text-sm mt-1">🛡️ Simple & efficace</p>
@@ -1559,7 +1545,7 @@ export default function App() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-[#4687FF] hover:bg-[#3a75e0] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
                       >
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/NordVPN_logo.svg/512px-NordVPN_logo.svg.png" alt="NordVPN" className="h-5 w-auto brightness-0 invert" />
+                        <img src="https://logo.clearbit.com/nordvpn.com" alt="NordVPN" className="h-5 w-5 rounded" />
                         NordVPN
                       </a>
                       <a
@@ -1568,7 +1554,7 @@ export default function App() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-[#DA3940] hover:bg-[#c13138] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
                       >
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/ExpressVPN_Logo.svg/512px-ExpressVPN_Logo.svg.png" alt="ExpressVPN" className="h-5 w-auto brightness-0 invert" />
+                        <img src="https://logo.clearbit.com/expressvpn.com" alt="ExpressVPN" className="h-5 w-5 rounded" />
                         ExpressVPN
                       </a>
                       <a
@@ -1577,7 +1563,7 @@ export default function App() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-[#178BCC] hover:bg-[#1379b3] text-white px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
                       >
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Surfshark_VPN_logo.svg/512px-Surfshark_VPN_logo.svg.png" alt="Surfshark" className="h-5 w-auto brightness-0 invert" />
+                        <img src="https://logo.clearbit.com/surfshark.com" alt="Surfshark" className="h-5 w-5 rounded" />
                         Surfshark
                       </a>
                       <a
@@ -1586,7 +1572,7 @@ export default function App() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 bg-[#FFCC00] hover:bg-[#e6b800] text-black px-5 py-3 rounded-xl font-bold transition-all hover:scale-105 shadow-lg"
                       >
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/CyberGhost_VPN_logo.svg/512px-CyberGhost_VPN_logo.svg.png" alt="CyberGhost" className="h-5 w-auto" />
+                        <img src="https://logo.clearbit.com/cyberghostvpn.com" alt="CyberGhost" className="h-5 w-5 rounded" />
                         CyberGhost
                       </a>
                     </div>
